@@ -1,6 +1,6 @@
 import { nanoid } from 'nanoid';
 import { differentiate } from '@enge401-mastery/math-engine';
-import type { Exercise, Difficulty } from './types.js';
+import type { Exercise, Difficulty } from './types';
 
 const POLY_TERMS = [
   { expr: 'x^2', diff: '2 * x', latex: 'x^2' },

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { differentiate, productRuleDerivative, nthDerivative } from '../src/differentiation.js';
+import { differentiate, productRuleDerivative, nthDerivative } from '../src/differentiation';
 
 describe('differentiate', () => {
   it('differentiates x^2 -> 2x', () => {

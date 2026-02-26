@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { degreesToRadians, radiansToDegrees, unitCircleValue, verifyIdentity } from '../src/trig.js';
+import { degreesToRadians, radiansToDegrees, unitCircleValue, verifyIdentity } from '../src/trig';
 
 describe('degreesToRadians', () => {
   it('converts 180 degrees to PI', () => {

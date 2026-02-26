@@ -1,6 +1,6 @@
 import { nanoid } from 'nanoid';
 import { eulerMethod } from '@enge401-mastery/math-engine';
-import type { Exercise, Difficulty } from './types.js';
+import type { Exercise, Difficulty } from './types';
 
 /**
  * Generates a differential equation / Euler method exercise.

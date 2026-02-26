@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { definiteIntegral } from '../src/integration.js';
+import { definiteIntegral } from '../src/integration';
 
 describe('definiteIntegral', () => {
   it('integrates x from 0 to 1 = 0.5', () => {

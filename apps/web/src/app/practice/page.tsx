@@ -1,13 +1,47 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { chapters } from '@/lib/chapters';
 import ExerciseCard from '@/components/ExerciseCard';
-import type { Difficulty } from '@enge401-mastery/exercise-generator';
+import MathDisplay from '@/components/MathDisplay';
+import type { Difficulty, Exercise } from '@enge401-mastery/exercise-generator';
+import {
+  generateAlgebraExercise,
+  generateTrigExercise,
+  generateExponentialExercise,
+  generateDifferentiationExercise,
+  generateIntegrationExercise,
+  generateDiffeqExercise,
+} from '@enge401-mastery/exercise-generator';
+
+const exerciseGenerators: Record<number, (difficulty: Difficulty) => Exercise> = {
+  1: generateAlgebraExercise,
+  2: generateTrigExercise,
+  3: generateExponentialExercise,
+  4: generateDifferentiationExercise,
+  5: generateIntegrationExercise,
+  6: generateDiffeqExercise,
+};
 
 export default function PracticePage() {
   const [selectedChapter, setSelectedChapter] = useState<number>(1);
   const [selectedDifficulty, setSelectedDifficulty] = useState<Difficulty>('easy');
+  const [exercise, setExercise] = useState<Exercise | null>(null);
+  const [exerciseKey, setExerciseKey] = useState(0);
+
+  const generateExercise = useCallback(() => {
+    const generator = exerciseGenerators[selectedChapter];
+    if (generator) {
+      const newExercise = generator(selectedDifficulty);
+      setExercise(newExercise);
+      setExerciseKey((prev) => prev + 1);
+    }
+  }, [selectedChapter, selectedDifficulty]);
+
+  // Generate exercise when chapter or difficulty changes
+  useEffect(() => {
+    generateExercise();
+  }, [generateExercise]);
 
   const chapter = chapters.find((c) => c.id === selectedChapter)!;
 
@@ -20,7 +54,7 @@ export default function PracticePage() {
       </p>
 
       {/* Controls */}
-      <div className="mb-8 flex flex-wrap gap-4">
+      <div className="mb-8 flex flex-wrap items-end gap-4">
         <div>
           <label className="mb-1 block text-sm font-medium text-gray-700">
             Chapter
@@ -51,6 +85,12 @@ export default function PracticePage() {
             <option value="hard">Hard</option>
           </select>
         </div>
+        <button
+          onClick={generateExercise}
+          className="rounded-md bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500"
+        >
+          New Question
+        </button>
       </div>
 
       {/* Exercise display */}
@@ -58,14 +98,23 @@ export default function PracticePage() {
         <h2 className="mb-4 text-xl font-semibold text-gray-800">
           Chapter {chapter.id}: {chapter.title}
         </h2>
-        <ExerciseCard
-          question={`Practice question for Chapter ${chapter.id} (${selectedDifficulty}) — exercises are generated dynamically.`}
-          answer="Submit your answer to see the solution."
-          hints={[
-            `This is a ${selectedDifficulty} question from ${chapter.title}`,
-            'More hints will appear after your attempt',
-          ]}
-        />
+        {exercise ? (
+          <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
+            <div className="mb-4 text-gray-800 font-medium">
+              <MathDisplay latex={exercise.question.replace(/\$/g, '')} displayMode={true} />
+            </div>
+            <ExerciseCard
+              key={exerciseKey}
+              question=""
+              answer={exercise.answer}
+              hints={exercise.hints}
+            />
+          </div>
+        ) : (
+          <div className="rounded-lg border border-gray-200 bg-gray-50 p-6 text-center text-gray-500">
+            Loading exercise...
+          </div>
+        )}
       </section>
     </div>
   );

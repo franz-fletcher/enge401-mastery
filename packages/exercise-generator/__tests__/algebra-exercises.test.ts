@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { generateLinearExercise, generateQuadraticExercise } from '../src/algebra-exercises.js';
+import { generateLinearExercise, generateQuadraticExercise } from '../src/algebra-exercises';
 
 describe('generateLinearExercise', () => {
   it('generates an exercise with correct structure', () => {

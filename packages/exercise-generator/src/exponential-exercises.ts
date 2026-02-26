@@ -1,6 +1,6 @@
 import { nanoid } from 'nanoid';
 import { solveExponentialEquation, compoundGrowth } from '@enge401-mastery/math-engine';
-import type { Exercise, Difficulty } from './types.js';
+import type { Exercise, Difficulty } from './types';
 
 function randomInt(min: number, max: number): number {
   return Math.floor(Math.random() * (max - min + 1)) + min;

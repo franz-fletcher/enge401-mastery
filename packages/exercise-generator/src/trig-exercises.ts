@@ -1,6 +1,6 @@
 import { nanoid } from 'nanoid';
 import { degreesToRadians, unitCircleValue } from '@enge401-mastery/math-engine';
-import type { Exercise, Difficulty, TrigFunction } from './types.js';
+import type { Exercise, Difficulty, TrigFunction } from './types';
 
 const STANDARD_ANGLES = [0, 30, 45, 60, 90, 120, 135, 150, 180];
 const TRIG_FNS: TrigFunction[] = ['sin', 'cos', 'tan'];

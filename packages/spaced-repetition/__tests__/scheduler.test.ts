@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { Rating } from 'ts-fsrs';
-import { createNewCard, reviewCard, getDueCards } from '../src/scheduler.js';
+import { createNewCard, reviewCard, getDueCards } from '../src/scheduler';
 
 describe('createNewCard', () => {
   it('creates a card with the correct topic and chapter', () => {

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { solveLinearEquation, solveQuadratic, simplifyExpression, factorExpression } from '../src/algebra.js';
+import { solveLinearEquation, solveQuadratic, simplifyExpression, factorExpression } from '../src/algebra';
 
 describe('solveLinearEquation', () => {
   it('solves 2x + 3 = 7', () => {

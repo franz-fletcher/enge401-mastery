@@ -1,6 +1,6 @@
 import { FSRS, Rating, createEmptyCard } from 'ts-fsrs';
 import type { Card, Grade } from 'ts-fsrs';
-import type { ReviewCard, Difficulty } from './types.js';
+import type { ReviewCard, Difficulty } from './types';
 
 const f = new FSRS({});
 

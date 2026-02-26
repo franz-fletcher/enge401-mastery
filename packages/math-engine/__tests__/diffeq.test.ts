@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { eulerMethod } from '../src/diffeq.js';
+import { eulerMethod } from '../src/diffeq';
 
 describe('eulerMethod', () => {
   it('solves dy/dx = y with y(0)=1 approximates e^x', () => {

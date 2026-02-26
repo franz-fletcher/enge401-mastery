@@ -1,5 +1,5 @@
 import { nanoid } from 'nanoid';
-import type { Exercise, Difficulty } from './types.js';
+import type { Exercise, Difficulty } from './types';
 
 const INTEGRALS = [
   { expr: 'x', latex: 'x', answer: 'x^2/2' },

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { solveExponentialEquation, compoundGrowth } from '../src/exponentials.js';
+import { solveExponentialEquation, compoundGrowth } from '../src/exponentials';
 
 describe('solveExponentialEquation', () => {
   it('solves 2^x = 8, x = 3', () => {
