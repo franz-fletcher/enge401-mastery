@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import MathDisplay from './MathDisplay';
 
 interface ExerciseCardProps {
   question: string;
@@ -29,9 +30,10 @@ export default function ExerciseCard({
       {hints.length > 0 && !submitted && (
         <div className="mb-4">
           {hints.slice(0, hintsShown).map((hint, i) => (
-            <p key={i} className="mb-1 rounded bg-yellow-50 px-3 py-2 text-sm text-yellow-800">
-              💡 Hint {i + 1}: {hint}
-            </p>
+            <div key={i} className="mb-1 rounded bg-yellow-50 px-3 py-2 text-sm text-yellow-800">
+              <span className="mr-1">💡 Hint {i + 1}:</span>
+              <MathDisplay latex={hint.replace(/\$/g, '')} />
+            </div>
           ))}
           {hintsShown < hints.length && (
             <button
