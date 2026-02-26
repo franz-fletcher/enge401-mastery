@@ -39,3 +39,7 @@ pnpm-debug.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# package manager lock files (only pnpm is used)
+package-lock.json
+yarn.lock
