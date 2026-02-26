@@ -68,6 +68,66 @@ cd packages/math-engine && pnpm test
 pnpm lint
 ```
 
+## Database Setup
+
+The project uses Drizzle ORM with SQLite for data persistence.
+
+### Database Schema
+
+The database includes the following tables:
+
+- **users** — Anonymous user authentication with unique anonymous IDs
+- **progress** — Exercise completion tracking with accuracy and attempts
+- **spaced_repetition** — SM-2 algorithm data for review scheduling
+- **study_sessions** — Study session tracking with duration and accuracy
+- **calendar_events** — Study scheduling and milestone tracking
+
+### Database Commands
+
+```bash
+# Generate migrations from schema changes
+cd apps/web && pnpm run db:generate
+
+# Apply pending migrations
+pnpm run db:migrate
+
+# Push schema directly (development only)
+pnpm run db:push
+
+# Open Drizzle Studio GUI
+pnpm run db:studio
+
+# Check migration status
+pnpm run db:check
+```
+
+### Environment Variables
+
+Copy `.env.example` to `.env.local` and configure:
+
+```bash
+# Database Configuration
+DATABASE_URL=file:./data/dev.db
+
+# NextAuth Configuration
+NEXTAUTH_URL=http://localhost:3000
+NEXTAUTH_SECRET=your-secret-key
+```
+
+### Database Connection
+
+Import the database client in your code:
+
+```typescript
+import { db, users, progress } from '@/db';
+
+// Query examples
+const allUsers = await db.query.users.findMany();
+const userProgress = await db.query.progress.findMany({
+  where: (progress, { eq }) => eq(progress.userId, userId),
+});
+```
+
 ## Packages
 
 ### `@enge401-mastery/math-engine`
@@ -116,3 +176,6 @@ Next.js 15 App Router application with:
 | [KaTeX](https://katex.org/) | Math rendering |
 | [Tailwind CSS](https://tailwindcss.com/) | Styling |
 | [Vitest](https://vitest.dev/) | Unit testing |
+| [Drizzle ORM](https://orm.drizzle.team/) | TypeScript ORM |
+| [SQLite](https://www.sqlite.org/) | Local database |
+| [better-sqlite3](https://github.com/WiseLibs/better-sqlite3) | SQLite driver |

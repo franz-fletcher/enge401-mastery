@@ -2,7 +2,8 @@ import type { Card } from 'ts-fsrs';
 
 export type Difficulty = 'easy' | 'medium' | 'hard';
 
-export interface ReviewCard extends Card {
+// Omit the difficulty property from Card and add our own
+export interface ReviewCard extends Omit<Card, 'difficulty'> {
   topic: string;
   chapter: number;
   difficulty: Difficulty;

@@ -27,10 +27,11 @@ export function reviewCard(
   rating: Grade,
 ): { card: ReviewCard; nextDue: Date } {
   const now = new Date();
-  const record = f.repeat(card as Card, now);
+  // Cast to unknown first to avoid type incompatibility
+  const record = f.repeat(card as unknown as Card, now);
   const result = record[rating as Grade];
   return {
-    card: { ...result.card, topic: card.topic, chapter: card.chapter, difficulty: card.difficulty },
+    card: { ...result.card, topic: card.topic, chapter: card.chapter, difficulty: card.difficulty } as ReviewCard,
     nextDue: result.card.due,
   };
 }

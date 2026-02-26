@@ -1,6 +1,8 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import Link from 'next/link';
+import { notFound } from 'next/navigation';
 import { chapters } from '@/lib/chapters';
 import ExerciseCard from '@/components/ExerciseCard';
 import MathDisplay from '@/components/MathDisplay';
@@ -23,23 +25,19 @@ import {
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Progress } from '@/components/ui/progress';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Separator } from '@/components/ui/separator';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import {
+  ChevronLeft,
   Calculator,
-  RefreshCw,
-  BookOpen,
   Target,
+  RefreshCw,
   CheckCircle2,
   HelpCircle,
+  BookOpen,
+  TrendingUp,
 } from 'lucide-react';
 
 const exerciseGenerators: Record<number, (difficulty: Difficulty) => Exercise> = {
@@ -51,54 +49,114 @@ const exerciseGenerators: Record<number, (difficulty: Difficulty) => Exercise> =
   6: generateDiffeqExercise,
 };
 
-const difficultyConfig = {
-  easy: { label: 'Easy', color: 'bg-green-500', icon: CheckCircle2 },
-  medium: { label: 'Medium', color: 'bg-yellow-500', icon: Target },
-  hard: { label: 'Hard', color: 'bg-red-500', icon: HelpCircle },
-};
+interface PageProps {
+  params: Promise<{ id: string }>;
+}
 
-export default function PracticePage() {
-  const [selectedChapter, setSelectedChapter] = useState<number>(1);
+export default function ChapterPracticePage({ params }: PageProps) {
+  const [chapterId, setChapterId] = useState<number | null>(null);
   const [selectedDifficulty, setSelectedDifficulty] = useState<Difficulty>('easy');
   const [exercise, setExercise] = useState<Exercise | null>(null);
   const [exerciseKey, setExerciseKey] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const [sessionStats, setSessionStats] = useState({ attempted: 0, correct: 0 });
 
+  // Resolve params
+  useEffect(() => {
+    params.then(({ id }) => {
+      const numId = Number(id);
+      const chapter = chapters.find((ch) => ch.id === numId);
+      if (!chapter) {
+        notFound();
+      }
+      setChapterId(numId);
+    });
+  }, [params]);
+
   const generateExercise = useCallback(async () => {
+    if (!chapterId) return;
+    
     setIsLoading(true);
-    const generator = exerciseGenerators[selectedChapter];
+    const generator = exerciseGenerators[chapterId];
     if (generator) {
-      // Simulate a brief loading state for better UX
       await new Promise((resolve) => setTimeout(resolve, 300));
       const newExercise = generator(selectedDifficulty);
       setExercise(newExercise);
       setExerciseKey((prev) => prev + 1);
     }
     setIsLoading(false);
-  }, [selectedChapter, selectedDifficulty]);
+  }, [chapterId, selectedDifficulty]);
 
   // Generate exercise when chapter or difficulty changes
   useEffect(() => {
-    generateExercise();
-  }, [generateExercise]);
+    if (chapterId) {
+      generateExercise();
+    }
+  }, [chapterId, generateExercise]);
 
-  const chapter = chapters.find((c) => c.id === selectedChapter)!;
-  const difficultyInfo = difficultyConfig[selectedDifficulty];
+  if (!chapterId) {
+    return (
+      <div className="space-y-8">
+        <Skeleton className="h-8 w-64" />
+        <Skeleton className="h-32 w-full" />
+        <Skeleton className="h-64 w-full" />
+      </div>
+    );
+  }
+
+  const chapter = chapters.find((c) => c.id === chapterId)!;
 
   return (
     <div className="space-y-8">
       {/* Header */}
       <div className="space-y-2">
-        <div className="flex items-center gap-2">
-          <Calculator className="h-6 w-6 text-primary" />
-          <h1 className="text-3xl font-bold tracking-tight">Practice Mode</h1>
+        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+          <Button asChild variant="ghost" size="sm" className="h-auto p-0">
+            <Link href={`/chapter/${chapterId}`}>
+              <ChevronLeft className="h-4 w-4 mr-1" />
+              Back to Chapter
+            </Link>
+          </Button>
+          <span>/</span>
+          <span>Practice Mode</span>
         </div>
-        <p className="text-muted-foreground max-w-2xl">
-          Generate randomised exercises. Select a chapter and difficulty, then answer
-          the question.
-        </p>
+        <div className="flex items-center gap-3">
+          <Calculator className="h-6 w-6 text-primary" />
+          <h1 className="text-3xl font-bold tracking-tight">
+            Chapter {chapter.id} Practice
+          </h1>
+        </div>
+        <p className="text-muted-foreground">{chapter.title}</p>
       </div>
+
+      {/* Progress Overview */}
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-sm font-medium flex items-center gap-2">
+            <TrendingUp className="h-4 w-4" />
+            Session Progress
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <div className="flex items-center justify-between text-sm">
+            <span className="text-muted-foreground">
+              {sessionStats.attempted} exercises attempted
+            </span>
+            <span className="font-medium">
+              {sessionStats.attempted > 0
+                ? Math.round((sessionStats.correct / sessionStats.attempted) * 100)
+                : 0}% accuracy
+            </span>
+          </div>
+          <Progress 
+            value={sessionStats.attempted > 0 
+              ? (sessionStats.correct / sessionStats.attempted) * 100 
+              : 0
+            } 
+            className="h-2" 
+          />
+        </CardContent>
+      </Card>
 
       {/* Controls */}
       <Card>
@@ -108,34 +166,10 @@ export default function PracticePage() {
             Exercise Settings
           </CardTitle>
           <CardDescription>
-            Choose your chapter and difficulty level
+            Choose your difficulty level for this chapter
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-6">
-          {/* Chapter Selector */}
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Chapter</label>
-            <Select
-              value={String(selectedChapter)}
-              onValueChange={(value) => setSelectedChapter(Number(value))}
-            >
-              <SelectTrigger className="w-full sm:w-[300px]">
-                <SelectValue placeholder="Select a chapter" />
-              </SelectTrigger>
-              <SelectContent>
-                {chapters.map((ch) => (
-                  <SelectItem key={ch.id} value={String(ch.id)}>
-                    <div className="flex items-center gap-2">
-                      <BookOpen className="h-4 w-4 text-muted-foreground" />
-                      <span>{ch.id}. {ch.title}</span>
-                    </div>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          {/* Difficulty Selector */}
+        <CardContent>
           <div className="space-y-2">
             <label className="text-sm font-medium">Difficulty</label>
             <ToggleGroup
@@ -160,7 +194,7 @@ export default function PracticePage() {
             </ToggleGroup>
           </div>
         </CardContent>
-        <CardFooter className="flex justify-between">
+        <CardFooter>
           <Button
             onClick={generateExercise}
             disabled={isLoading}
@@ -169,16 +203,6 @@ export default function PracticePage() {
             <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
             {isLoading ? 'Generating...' : 'New Question'}
           </Button>
-          
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <span>Session:</span>
-            <Badge variant="outline">
-              {sessionStats.attempted} attempted
-            </Badge>
-            <Badge variant="outline" className="bg-green-500/10">
-              {sessionStats.correct} correct
-            </Badge>
-          </div>
         </CardFooter>
       </Card>
 
@@ -189,16 +213,9 @@ export default function PracticePage() {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <BookOpen className="h-5 w-5 text-primary" />
-            <h2 className="text-xl font-semibold tracking-tight">
-              Chapter {chapter.id}: {chapter.title}
-            </h2>
+            <h2 className="text-xl font-semibold tracking-tight">Exercise</h2>
           </div>
-          <Badge 
-            variant="outline" 
-            className={`${difficultyInfo.color.replace('bg-', 'text-')} border-current`}
-          >
-            {difficultyInfo.label}
-          </Badge>
+          <Badge variant="outline">{selectedDifficulty}</Badge>
         </div>
 
         {isLoading ? (
@@ -244,6 +261,21 @@ export default function PracticePage() {
           </Card>
         )}
       </section>
+
+      {/* Navigation */}
+      <div className="flex justify-between pt-4">
+        <Button asChild variant="outline">
+          <Link href={`/chapter/${chapterId}`}>
+            <ChevronLeft className="mr-2 h-4 w-4" />
+            Back to Chapter
+          </Link>
+        </Button>
+        <Button asChild variant="outline">
+          <Link href={`/chapter/${chapterId}/review`}>
+            Go to Review Mode
+          </Link>
+        </Button>
+      </div>
     </div>
   );
 }

@@ -2,17 +2,34 @@
 
 import { useState } from 'react';
 import MathDisplay from './MathDisplay';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
+import {
+  Card,
+  CardContent,
+  CardFooter,
+} from '@/components/ui/card';
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from '@/components/ui/collapsible';
+import { Separator } from '@/components/ui/separator';
+import { Lightbulb, CheckCircle2, XCircle, RotateCcw, ChevronDown } from 'lucide-react';
 
 interface ExerciseCardProps {
   question: string;
   answer: string | number;
   hints?: string[];
+  onAttempt?: (correct: boolean) => void;
 }
 
 export default function ExerciseCard({
   question,
   answer,
   hints = [],
+  onAttempt,
 }: ExerciseCardProps) {
   const [userAnswer, setUserAnswer] = useState('');
   const [submitted, setSubmitted] = useState(false);
@@ -22,77 +39,112 @@ export default function ExerciseCard({
     submitted &&
     userAnswer.trim().toLowerCase() === String(answer).trim().toLowerCase();
 
-  return (
-    <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
-      <p className="mb-4 text-gray-800 font-medium">{question}</p>
+  const handleSubmit = () => {
+    if (!userAnswer.trim()) return;
+    setSubmitted(true);
+    onAttempt?.(isCorrect);
+  };
 
-      {/* Hints */}
-      {hints.length > 0 && !submitted && (
-        <div className="mb-4">
-          {hints.slice(0, hintsShown).map((hint, i) => (
-            <div key={i} className="mb-1 rounded bg-yellow-50 px-3 py-2 text-sm text-yellow-800">
-              <span className="mr-1">💡 Hint {i + 1}:</span>
-              <MathDisplay latex={hint.replace(/\$/g, '')} />
-            </div>
-          ))}
-          {hintsShown < hints.length && (
-            <button
-              onClick={() => setHintsShown((n) => n + 1)}
-              className="text-sm text-blue-600 hover:underline"
-            >
-              Show hint {hintsShown + 1}
-            </button>
-          )}
+  const handleReset = () => {
+    setSubmitted(false);
+    setUserAnswer('');
+    setHintsShown(0);
+  };
+
+  return (
+    <div className="space-y-4">
+      {/* Question */}
+      {question && (
+        <div className="text-foreground font-medium">
+          {question}
         </div>
       )}
 
-      {/* Answer input */}
+      {/* Hints */}
+      {hints.length > 0 && !submitted && (
+        <Collapsible open={hintsShown > 0}>
+          <div className="space-y-2">
+            {hints.slice(0, hintsShown).map((hint, i) => (
+              <Card key={i} className="bg-yellow-500/10 border-yellow-500/20">
+                <CardContent className="p-3">
+                  <div className="flex items-start gap-2">
+                    <Lightbulb className="h-4 w-4 text-yellow-600 mt-0.5 shrink-0" />
+                    <div className="text-sm text-yellow-800">
+                      <span className="font-medium">Hint {i + 1}:</span>{' '}
+                      <MathDisplay latex={hint.replace(/\$/g, '')} />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+            
+            {hintsShown < hints.length && (
+              <CollapsibleTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setHintsShown((n) => n + 1)}
+                  className="text-muted-foreground hover:text-foreground"
+                >
+                  <Lightbulb className="mr-2 h-4 w-4" />
+                  Show hint {hintsShown + 1}
+                  <ChevronDown className="ml-1 h-3 w-3" />
+                </Button>
+              </CollapsibleTrigger>
+            )}
+          </div>
+        </Collapsible>
+      )}
+
+      {/* Answer Input */}
       {!submitted ? (
         <div className="flex gap-3">
-          <input
+          <Input
             type="text"
-            className="flex-1 rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="Your answer…"
+            placeholder="Your answer..."
             value={userAnswer}
             onChange={(e) => setUserAnswer(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && setSubmitted(true)}
+            onKeyDown={(e) => e.key === 'Enter' && handleSubmit()}
+            className="flex-1"
           />
-          <button
-            onClick={() => setSubmitted(true)}
-            className="rounded-md bg-blue-600 px-4 py-2 text-sm text-white font-medium hover:bg-blue-700"
-          >
+          <Button onClick={handleSubmit} disabled={!userAnswer.trim()}>
             Submit
-          </button>
+          </Button>
         </div>
       ) : (
-        <div
-          className={`rounded-md p-4 ${
-            isCorrect
-              ? 'bg-green-50 border border-green-200'
-              : 'bg-red-50 border border-red-200'
-          }`}
-        >
-          <p
-            className={`font-semibold ${isCorrect ? 'text-green-800' : 'text-red-800'}`}
-          >
-            {isCorrect ? '✓ Correct!' : '✗ Incorrect'}
-          </p>
-          {!isCorrect && (
-            <p className="mt-1 text-sm text-gray-700">
-              Answer: <span className="font-mono font-bold">{String(answer)}</span>
-            </p>
-          )}
-          <button
-            onClick={() => {
-              setSubmitted(false);
-              setUserAnswer('');
-              setHintsShown(0);
-            }}
-            className="mt-3 text-sm text-blue-600 hover:underline"
-          >
-            Try again
-          </button>
-        </div>
+        <Card className={isCorrect ? 'border-green-500/50 bg-green-500/5' : 'border-red-500/50 bg-red-500/5'}>
+          <CardContent className="p-4">
+            <div className="flex items-start gap-3">
+              {isCorrect ? (
+                <CheckCircle2 className="h-5 w-5 text-green-600 mt-0.5 shrink-0" />
+              ) : (
+                <XCircle className="h-5 w-5 text-red-600 mt-0.5 shrink-0" />
+              )}
+              <div className="flex-1">
+                <p className={`font-semibold ${isCorrect ? 'text-green-800' : 'text-red-800'}`}>
+                  {isCorrect ? 'Correct!' : 'Incorrect'}
+                </p>
+                {!isCorrect && (
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    Answer: <code className="bg-muted px-1.5 py-0.5 rounded text-sm font-mono">{String(answer)}</code>
+                  </p>
+                )}
+              </div>
+            </div>
+          </CardContent>
+          <Separator />
+          <CardFooter className="p-3">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleReset}
+              className="gap-2"
+            >
+              <RotateCcw className="h-4 w-4" />
+              Try again
+            </Button>
+          </CardFooter>
+        </Card>
       )}
     </div>
   );
