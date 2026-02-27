@@ -128,7 +128,7 @@ export function BreadcrumbNavigation() {
   }
 
   return (
-    <Breadcrumb>
+    <Breadcrumb data-testid="breadcrumb">
       <BreadcrumbList>
         {breadcrumbs.map((segment, index) => (
           <React.Fragment key={segment.label + index}>

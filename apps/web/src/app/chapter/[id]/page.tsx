@@ -49,7 +49,7 @@ export default async function ChapterPage({ params }: PageProps) {
   return (
     <div className="space-y-8">
       {/* Header */}
-      <div className="space-y-2">
+      <div className="space-y-2" data-testid="chapter-header">
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
           <Badge variant="outline">Chapter {chapter.id}</Badge>
           <span>/</span>
@@ -62,7 +62,7 @@ export default async function ChapterPage({ params }: PageProps) {
       </div>
 
       {/* Progress Overview */}
-      <Card>
+      <Card data-testid="chapter-progress">
         <CardHeader className="pb-3">
           <CardTitle className="text-sm font-medium flex items-center gap-2">
             <Target className="h-4 w-4" />
@@ -82,7 +82,7 @@ export default async function ChapterPage({ params }: PageProps) {
       </Card>
 
       {/* Theory Section */}
-      <section className="space-y-4">
+      <section className="space-y-4" data-testid="theory-section">
         <div className="flex items-center gap-2">
           <BookOpen className="h-5 w-5 text-primary" />
           <h2 className="text-xl font-semibold tracking-tight">Theory</h2>
@@ -132,7 +132,7 @@ export default async function ChapterPage({ params }: PageProps) {
       <Separator />
 
       {/* Exercise Section */}
-      <section className="space-y-4">
+      <section className="space-y-4" data-testid="exercise-section">
         <div className="flex items-center gap-2">
           <Calculator className="h-5 w-5 text-primary" />
           <h2 className="text-xl font-semibold tracking-tight">Sample Exercises</h2>
@@ -148,7 +148,7 @@ export default async function ChapterPage({ params }: PageProps) {
       <Separator />
 
       {/* Related Exercises */}
-      <section className="space-y-4">
+      <section className="space-y-4" data-testid="practice-options">
         <div className="flex items-center gap-2">
           <GraduationCap className="h-5 w-5 text-primary" />
           <h2 className="text-xl font-semibold tracking-tight">Practice Options</h2>

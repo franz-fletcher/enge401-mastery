@@ -128,8 +128,8 @@ export function SidebarRight() {
   };
 
   return (
-    <Sidebar side="right" variant="inset" collapsible="icon" className="hidden lg:flex">
-      <SidebarHeader className="border-b border-sidebar-border">
+    <Sidebar side="right" variant="inset" collapsible="icon" className="hidden" data-testid="sidebar-right">
+      <SidebarHeader className="border-b border-sidebar-border" data-testid="quick-stats">
         <SidebarGroupLabel>Quick Stats</SidebarGroupLabel>
       </SidebarHeader>
 
@@ -173,7 +173,7 @@ export function SidebarRight() {
         </SidebarGroup>
 
         {/* Mini Calendar */}
-        <SidebarGroup>
+        <SidebarGroup data-testid="study-calendar">
           <SidebarGroupLabel className="flex items-center gap-2">
             <CalendarIcon className="h-4 w-4" />
             Study Calendar

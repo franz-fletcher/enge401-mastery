@@ -53,7 +53,7 @@ export default function DashboardPage() {
   return (
     <div className="space-y-8">
       {/* Header */}
-      <div className="space-y-2">
+      <div className="space-y-2" data-testid="dashboard-header">
         <div className="flex items-center gap-2">
           <BarChart3 className="h-6 w-6 text-primary" />
           <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
@@ -65,7 +65,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Stats Overview */}
-      <section>
+      <section data-testid="stats-cards">
         <h2 className="mb-4 text-lg font-semibold tracking-tight">Overview</h2>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <StatCard
@@ -101,7 +101,7 @@ export default function DashboardPage() {
 
       <div className="grid gap-6 lg:grid-cols-3">
         {/* Chapter Progress */}
-        <section className="lg:col-span-2 space-y-4">
+        <section className="lg:col-span-2 space-y-4" data-testid="progress-by-chapter">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <BookOpen className="h-5 w-5 text-primary" />
@@ -139,7 +139,7 @@ export default function DashboardPage() {
         {/* Side Panel */}
         <div className="space-y-6">
           {/* Upcoming Reviews */}
-          <section className="space-y-4">
+          <section className="space-y-4" data-testid="upcoming-reviews">
             <div className="flex items-center gap-2">
               <Calendar className="h-5 w-5 text-primary" />
               <h2 className="text-lg font-semibold tracking-tight">Upcoming Reviews</h2>
@@ -182,7 +182,7 @@ export default function DashboardPage() {
           </section>
 
           {/* Recent Activity */}
-          <section className="space-y-4">
+          <section className="space-y-4" data-testid="recent-activity">
             <div className="flex items-center gap-2">
               <Clock className="h-5 w-5 text-primary" />
               <h2 className="text-lg font-semibold tracking-tight">Recent Activity</h2>

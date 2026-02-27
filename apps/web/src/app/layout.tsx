@@ -8,6 +8,7 @@ import { Separator } from '@/components/ui/separator';
 import { SidebarLeft } from '@/components/sidebar-left';
 import { SidebarRight } from '@/components/sidebar-right';
 import { BreadcrumbNavigation } from '@/components/breadcrumb-navigation';
+import { ThemeToggle } from '@/components/theme-toggle';
 
 export const metadata: Metadata = {
   title: 'ENGE401 Mastery',
@@ -36,6 +37,9 @@ export default function RootLayout({
                   <SidebarTrigger />
                   <Separator orientation="vertical" className="mr-2 h-4" />
                   <BreadcrumbNavigation />
+                  <div className="ml-auto">
+                    <ThemeToggle />
+                  </div>
                 </header>
                 <main className="flex-1 p-4">{children}</main>
               </SidebarInset>

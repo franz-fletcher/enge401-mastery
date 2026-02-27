@@ -135,7 +135,7 @@ export function SidebarLeft() {
                 <Collapsible
                   key={chapter.id}
                   asChild
-                  defaultOpen={pathname.startsWith(`/chapter/${chapter.slug}`)}
+                  defaultOpen={pathname.startsWith(`/chapter/${chapter.id}`)}
                   className="group/collapsible"
                 >
                   <SidebarMenuItem>
@@ -163,9 +163,9 @@ export function SidebarLeft() {
                         <SidebarMenuSubItem>
                           <SidebarMenuSubButton
                             asChild
-                            isActive={pathname === `/chapter/${chapter.slug}`}
+                            isActive={pathname === `/chapter/${chapter.id}`}
                           >
-                            <Link href={`/chapter/${chapter.slug}`}>
+                            <Link href={`/chapter/${chapter.id}`}>
                               <FileText className="size-3.5" />
                               <span>Theory</span>
                             </Link>
@@ -176,9 +176,9 @@ export function SidebarLeft() {
                         <SidebarMenuSubItem>
                           <SidebarMenuSubButton
                             asChild
-                            isActive={pathname === `/chapter/${chapter.slug}/practice`}
+                            isActive={pathname === `/chapter/${chapter.id}/practice`}
                           >
-                            <Link href={`/chapter/${chapter.slug}/practice`}>
+                            <Link href={`/chapter/${chapter.id}/practice`}>
                               <Calculator className="size-3.5" />
                               <span>Practice</span>
                             </Link>
@@ -189,9 +189,9 @@ export function SidebarLeft() {
                         <SidebarMenuSubItem>
                           <SidebarMenuSubButton
                             asChild
-                            isActive={pathname === `/chapter/${chapter.slug}/review`}
+                            isActive={pathname === `/chapter/${chapter.id}/review`}
                           >
-                            <Link href={`/chapter/${chapter.slug}/review`}>
+                            <Link href={`/chapter/${chapter.id}/review`}>
                               <RotateCcw className="size-3.5" />
                               <span>Review</span>
                               {stats.reviewsDue > 0 && (

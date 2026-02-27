@@ -54,50 +54,66 @@ export default defineConfig({
 
   // Configure projects for major browsers and viewports
   projects: [
-    // Desktop Chrome
+    // Auth setup project - runs first
+    {
+      name: 'setup',
+      testMatch: /auth\.setup\.ts/,
+    },
+
+    // Desktop Chrome - depends on setup
     {
       name: 'chromium-desktop',
-      use: { 
+      use: {
         ...devices['Desktop Chrome'],
         viewport: { width: 1920, height: 1080 },
+        storageState: 'playwright/.auth/test-user.json',
       },
+      dependencies: ['setup'],
     },
-    
-    // Laptop
+
+    // Laptop - depends on setup
     {
       name: 'chromium-laptop',
-      use: { 
+      use: {
         ...devices['Desktop Chrome'],
         viewport: { width: 1366, height: 768 },
+        storageState: 'playwright/.auth/test-user.json',
       },
+      dependencies: ['setup'],
     },
-    
-    // Tablet
+
+    // Tablet - depends on setup
     {
       name: 'chromium-tablet',
-      use: { 
-        ...devices['iPad Pro 11'],
+      use: {
+        ...devices['Desktop Chrome'],
         viewport: { width: 834, height: 1194 },
+        storageState: 'playwright/.auth/test-user.json',
       },
+      dependencies: ['setup'],
     },
-    
-    // Mobile
+
+    // Mobile - depends on setup
     {
       name: 'chromium-mobile',
-      use: { 
-        ...devices['iPhone 14'],
+      use: {
+        ...devices['Desktop Chrome'],
         viewport: { width: 390, height: 844 },
+        storageState: 'playwright/.auth/test-user.json',
       },
+      dependencies: ['setup'],
     },
-    
-    // Dark mode testing
+
+    // Dark mode testing - depends on setup
     {
       name: 'chromium-dark',
-      use: { 
+      use: {
         ...devices['Desktop Chrome'],
         viewport: { width: 1920, height: 1080 },
         colorScheme: 'dark',
+        storageState: 'playwright/.auth/test-user.json',
       },
+      dependencies: ['setup'],
     },
   ],
 

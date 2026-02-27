@@ -17,7 +17,7 @@ export default function HomePage() {
   return (
     <div className="space-y-8">
       {/* Hero Section */}
-      <section className="relative overflow-hidden rounded-xl bg-gradient-to-br from-primary/10 via-primary/5 to-background border px-6 py-12 md:px-12 md:py-16">
+      <section className="relative overflow-hidden rounded-xl bg-gradient-to-br from-primary/10 via-primary/5 to-background border px-6 py-12 md:px-12 md:py-16" data-testid="hero-section">
         <div className="relative z-10 max-w-2xl">
           <Badge variant="secondary" className="mb-4">
             <Sparkles className="mr-1 h-3 w-3" />
@@ -54,7 +54,7 @@ export default function HomePage() {
       </section>
 
       {/* Stats Overview */}
-      <section>
+      <section data-testid="stats-overview">
         <h2 className="mb-4 text-xl font-semibold tracking-tight">Overview</h2>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           <Card>
@@ -99,7 +99,7 @@ export default function HomePage() {
       <Separator />
 
       {/* Chapter Grid */}
-      <section>
+      <section data-testid="chapter-grid">
         <div className="mb-6 flex items-center justify-between">
           <div>
             <h2 className="text-xl font-semibold tracking-tight">Chapters</h2>
@@ -113,7 +113,7 @@ export default function HomePage() {
         </div>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {chapters.map((ch) => (
-            <Link key={ch.id} href={`/chapter/${ch.id}`} className="group">
+            <Link key={ch.id} href={`/chapter/${ch.id}`} className="group" data-testid={`chapter-card-${ch.id}`}>
               <Card className="h-full transition-colors hover:bg-muted/50">
                 <CardHeader className="pb-3">
                   <div className="flex items-center gap-3">

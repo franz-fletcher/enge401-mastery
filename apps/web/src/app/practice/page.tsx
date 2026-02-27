@@ -89,7 +89,7 @@ export default function PracticePage() {
   return (
     <div className="space-y-8">
       {/* Header */}
-      <div className="space-y-2">
+      <div className="space-y-2" data-testid="practice-header">
         <div className="flex items-center gap-2">
           <Calculator className="h-6 w-6 text-primary" />
           <h1 className="text-3xl font-bold tracking-tight">Practice Mode</h1>
@@ -101,7 +101,7 @@ export default function PracticePage() {
       </div>
 
       {/* Controls */}
-      <Card>
+      <Card data-testid="exercise-card">
         <CardHeader>
           <CardTitle className="text-base flex items-center gap-2">
             <Target className="h-4 w-4" />
@@ -113,7 +113,7 @@ export default function PracticePage() {
         </CardHeader>
         <CardContent className="space-y-6">
           {/* Chapter Selector */}
-          <div className="space-y-2">
+          <div className="space-y-2" data-testid="chapter-selector">
             <label className="text-sm font-medium">Chapter</label>
             <Select
               value={String(selectedChapter)}
@@ -136,7 +136,7 @@ export default function PracticePage() {
           </div>
 
           {/* Difficulty Selector */}
-          <div className="space-y-2">
+          <div className="space-y-2" data-testid="difficulty-selector">
             <label className="text-sm font-medium">Difficulty</label>
             <ToggleGroup
               type="single"
@@ -165,6 +165,7 @@ export default function PracticePage() {
             onClick={generateExercise}
             disabled={isLoading}
             className="gap-2"
+            data-testid="generate-exercise-btn"
           >
             <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
             {isLoading ? 'Generating...' : 'New Question'}

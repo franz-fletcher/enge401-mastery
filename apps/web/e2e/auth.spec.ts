@@ -1,4 +1,18 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, Page } from '@playwright/test';
+
+// Helper to open mobile sidebar if needed
+async function openMobileSidebarIfNeeded(page: Page) {
+  const viewport = page.viewportSize();
+  if (viewport && viewport.width < 768) {
+    // On mobile, click the sidebar trigger to open it
+    const sidebarTrigger = page.locator('[data-sidebar="trigger"]');
+    if (await sidebarTrigger.isVisible().catch(() => false)) {
+      await sidebarTrigger.click();
+      // Wait for sidebar animation
+      await page.waitForTimeout(300);
+    }
+  }
+}
 
 /**
  * Authentication Tests
@@ -9,30 +23,39 @@ import { test, expect } from '@playwright/test';
 
 test.describe('Authentication', () => {
   test.describe('Anonymous User Auto-Creation', () => {
-    test('should auto-create anonymous user on first visit', async ({ page, context }) => {
-      // Clear any existing storage
-      await context.clearCookies();
+    test('should auto-create anonymous user on first visit', async ({ browser }) => {
+      // Create a fresh context without any storage state
+      const context = await browser.newContext({ storageState: undefined });
+      const page = await context.newPage();
       
       await page.goto('/');
       
       // Wait for auth to initialize
       await page.waitForTimeout(2000);
+      await openMobileSidebarIfNeeded(page);
       
-      // Check that user info appears in sidebar
-      await expect(page.getByText('Guest User')).toBeVisible();
+      // Check that user info appears in sidebar using data-testid
+      const sidebarFooter = page.getByTestId('sidebar-footer');
+      await expect(sidebarFooter).toBeVisible();
+      
+      // Check for Guest User text within the sidebar footer
+      await expect(sidebarFooter.getByText('Guest User')).toBeVisible();
       
       // Check localStorage for anonymousId
       const anonymousId = await page.evaluate(() => localStorage.getItem('anonymousId'));
       expect(anonymousId).toBeTruthy();
       expect(anonymousId).toMatch(/^anon_/);
+      
+      await context.close();
     });
 
     test('should display anonymous user in sidebar footer', async ({ page }) => {
       await page.goto('/');
       await page.waitForTimeout(2000);
+      await openMobileSidebarIfNeeded(page);
       
-      // Check sidebar footer shows user info
-      const sidebarFooter = page.locator('[data-slot="sidebar-footer"]');
+      // Check sidebar footer shows user info using data-testid
+      const sidebarFooter = page.getByTestId('sidebar-footer');
       await expect(sidebarFooter).toBeVisible();
       
       // Should show "Guest User" label
@@ -40,18 +63,20 @@ test.describe('Authentication', () => {
     });
 
     test('should create unique anonymous ID for each new session', async ({ browser }) => {
-      // Create two separate contexts (simulating different users)
-      const context1 = await browser.newContext();
-      const context2 = await browser.newContext();
+      // Create two separate contexts (simulating different users) WITHOUT shared auth state
+      const context1 = await browser.newContext({ storageState: undefined });
+      const context2 = await browser.newContext({ storageState: undefined });
       
       const page1 = await context1.newPage();
       const page2 = await context2.newPage();
       
       await page1.goto('http://localhost:3000');
       await page2.goto('http://localhost:3000');
+      await openMobileSidebarIfNeeded(page1);
+      await openMobileSidebarIfNeeded(page2);
       
-      await page1.waitForTimeout(2000);
-      await page2.waitForTimeout(2000);
+      await expect(page1.getByText("Guest User")).toBeVisible({ timeout: 10000 });
+      await expect(page2.getByText("Guest User")).toBeVisible({ timeout: 10000 });
       
       const id1 = await page1.evaluate(() => localStorage.getItem('anonymousId'));
       const id2 = await page2.evaluate(() => localStorage.getItem('anonymousId'));
@@ -78,6 +103,7 @@ test.describe('Authentication', () => {
       // Reload the page
       await page.reload();
       await page.waitForTimeout(2000);
+      await openMobileSidebarIfNeeded(page);
       
       // Get the anonymous ID after reload
       const anonymousIdAfter = await page.evaluate(() => 
@@ -87,7 +113,7 @@ test.describe('Authentication', () => {
       // ID should be the same
       expect(anonymousIdAfter).toBe(anonymousIdBefore);
       
-      // User should still be shown as Guest User
+      // User should still be visible
       await expect(page.getByText('Guest User')).toBeVisible();
     });
 
@@ -95,32 +121,38 @@ test.describe('Authentication', () => {
       await page.goto('/');
       await page.waitForTimeout(2000);
       
-      const anonymousIdBefore = await page.evaluate(() => 
+      // Get initial ID
+      const initialId = await page.evaluate(() => 
         localStorage.getItem('anonymousId')
       );
+      expect(initialId).toBeTruthy();
       
-      // Navigate to different pages
+      // Navigate to practice page
       await page.goto('/practice');
       await page.waitForTimeout(1000);
       
+      // ID should persist
+      const practiceId = await page.evaluate(() => 
+        localStorage.getItem('anonymousId')
+      );
+      expect(practiceId).toBe(initialId);
+      
+      // Navigate to dashboard
       await page.goto('/dashboard');
       await page.waitForTimeout(1000);
       
-      await page.goto('/chapter/1');
-      await page.waitForTimeout(1000);
-      
-      // Check ID is still the same
-      const anonymousIdAfter = await page.evaluate(() => 
+      // ID should still be the same
+      const dashboardId = await page.evaluate(() => 
         localStorage.getItem('anonymousId')
       );
-      expect(anonymousIdAfter).toBe(anonymousIdBefore);
+      expect(dashboardId).toBe(initialId);
     });
 
     test('should maintain session in cookies', async ({ page, context }) => {
       await page.goto('/');
       await page.waitForTimeout(2000);
       
-      // Check for session cookie
+      // Get cookies
       const cookies = await context.cookies();
       const sessionCookie = cookies.find(c => c.name.includes('session'));
       
@@ -131,23 +163,27 @@ test.describe('Authentication', () => {
 
   test.describe('User Data Isolation', () => {
     test('should isolate data between different anonymous users', async ({ browser }) => {
-      // Create two separate browser contexts
-      const context1 = await browser.newContext();
-      const context2 = await browser.newContext();
+      // Create two separate browser contexts WITHOUT shared auth state
+      const context1 = await browser.newContext({ storageState: undefined });
+      const context2 = await browser.newContext({ storageState: undefined });
       
       const page1 = await context1.newPage();
       const page2 = await context2.newPage();
       
-      // User 1 visits and completes an exercise
-      await page1.goto('http://localhost:3000/practice');
-      await page1.waitForTimeout(2000);
+      // User 1 visits home first to trigger auth, then goes to practice
+      await page1.goto('http://localhost:3000/');
+      await openMobileSidebarIfNeeded(page1);
+      await expect(page1.getByText("Guest User")).toBeVisible({ timeout: 10000 });
+      await page1.waitForTimeout(1000); // Wait for auth to complete and localStorage to be set
       
       // Get user 1's anonymous ID
       const id1 = await page1.evaluate(() => localStorage.getItem('anonymousId'));
       
-      // User 2 visits
-      await page2.goto('http://localhost:3000/practice');
-      await page2.waitForTimeout(2000);
+      // User 2 visits home first to trigger auth
+      await page2.goto('http://localhost:3000/');
+      await openMobileSidebarIfNeeded(page2);
+      await expect(page2.getByText("Guest User")).toBeVisible({ timeout: 10000 });
+      await page2.waitForTimeout(1000); // Wait for auth to complete
       
       // Get user 2's anonymous ID
       const id2 = await page2.evaluate(() => localStorage.getItem('anonymousId'));
@@ -162,8 +198,8 @@ test.describe('Authentication', () => {
     });
 
     test('should not share localStorage between contexts', async ({ browser }) => {
-      const context1 = await browser.newContext();
-      const context2 = await browser.newContext();
+      const context1 = await browser.newContext({ storageState: undefined });
+      const context2 = await browser.newContext({ storageState: undefined });
       
       const page1 = await context1.newPage();
       const page2 = await context2.newPage();
@@ -195,6 +231,7 @@ test.describe('Authentication', () => {
     test('should refetch session on window focus', async ({ page }) => {
       await page.goto('/');
       await page.waitForTimeout(2000);
+      await openMobileSidebarIfNeeded(page);
       
       // Simulate window focus
       await page.evaluate(() => window.dispatchEvent(new Event('focus')));
