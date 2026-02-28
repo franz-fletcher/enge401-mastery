@@ -221,3 +221,148 @@ export async function getReviewDueDates(): Promise<Date[]> {
 
   return dueReviews.map(r => r.nextReviewAt);
 }
+
+export interface ChapterStats {
+  totalAttempts: number;
+  correctAttempts: number;
+  accuracy: number;
+  attemptsByDifficulty: {
+    easy: number;
+    medium: number;
+    hard: number;
+  };
+}
+
+export interface OverallStats {
+  totalAttempts: number;
+  correctAttempts: number;
+  overallAccuracy: number;
+  chapterBreakdown: Array<{
+    chapterId: number;
+    attempts: number;
+    correct: number;
+    accuracy: number;
+  }>;
+}
+
+export async function recordPracticeAttempt({
+  chapterId,
+  exerciseType,
+  difficulty,
+  isCorrect,
+  accuracy,
+}: {
+  chapterId: number;
+  exerciseType: string;
+  difficulty: 'easy' | 'medium' | 'hard';
+  isCorrect: boolean;
+  accuracy: number;
+}) {
+  const session = await auth();
+  
+  if (!session?.user?.id) {
+    return { success: false, error: 'Not authenticated' };
+  }
+
+  try {
+    await db.insert(progress).values({
+      userId: session.user.id,
+      chapterId,
+      exerciseType,
+      difficulty,
+      isCorrect: isCorrect ? 1 : 0,
+      accuracy,
+      completedAt: new Date(),
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error('Failed to record practice attempt:', error);
+    return { success: false, error: 'Failed to record attempt' };
+  }
+}
+
+export async function getChapterStats(chapterId: number): Promise<ChapterStats> {
+  const session = await auth();
+  
+  if (!session?.user?.id) {
+    return {
+      totalAttempts: 0,
+      correctAttempts: 0,
+      accuracy: 0,
+      attemptsByDifficulty: { easy: 0, medium: 0, hard: 0 },
+    };
+  }
+
+  const userId = session.user.id;
+
+  const attempts = await db
+    .select()
+    .from(progress)
+    .where(and(eq(progress.userId, userId), eq(progress.chapterId, chapterId)));
+
+  const totalAttempts = attempts.length;
+  const correctAttempts = attempts.filter(a => a.isCorrect).length;
+  const accuracy = totalAttempts > 0 ? Math.round((correctAttempts / totalAttempts) * 100) : 0;
+
+  const attemptsByDifficulty = {
+    easy: attempts.filter(a => a.difficulty === 'easy').length,
+    medium: attempts.filter(a => a.difficulty === 'medium').length,
+    hard: attempts.filter(a => a.difficulty === 'hard').length,
+  };
+
+  return {
+    totalAttempts,
+    correctAttempts,
+    accuracy,
+    attemptsByDifficulty,
+  };
+}
+
+export async function getOverallStats(): Promise<OverallStats> {
+  const session = await auth();
+  
+  if (!session?.user?.id) {
+    return {
+      totalAttempts: 0,
+      correctAttempts: 0,
+      overallAccuracy: 0,
+      chapterBreakdown: [],
+    };
+  }
+
+  const userId = session.user.id;
+
+  const attempts = await db
+    .select()
+    .from(progress)
+    .where(eq(progress.userId, userId));
+
+  const totalAttempts = attempts.length;
+  const correctAttempts = attempts.filter(a => a.isCorrect).length;
+  const overallAccuracy = totalAttempts > 0 ? Math.round((correctAttempts / totalAttempts) * 100) : 0;
+
+  // Group by chapter
+  const chapterMap = new Map<number, { attempts: number; correct: number }>();
+  
+  attempts.forEach(attempt => {
+    const existing = chapterMap.get(attempt.chapterId) || { attempts: 0, correct: 0 };
+    existing.attempts++;
+    if (attempt.isCorrect) existing.correct++;
+    chapterMap.set(attempt.chapterId, existing);
+  });
+
+  const chapterBreakdown = Array.from(chapterMap.entries()).map(([chapterId, data]) => ({
+    chapterId,
+    attempts: data.attempts,
+    correct: data.correct,
+    accuracy: Math.round((data.correct / data.attempts) * 100),
+  }));
+
+  return {
+    totalAttempts,
+    correctAttempts,
+    overallAccuracy,
+    chapterBreakdown,
+  };
+}

@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { chapters } from '@/lib/chapters';
+import { getUserStats, getOverallStats } from '@/lib/stats-actions';
 import {
   Card,
   CardContent,
@@ -27,29 +28,11 @@ import {
   RotateCcw,
 } from 'lucide-react';
 
-// Mock data - replace with actual data fetching
-const mockStats = {
-  dueForReview: 0,
-  accuracy: null as number | null,
-  streak: 0,
-  totalExercises: 0,
-  completedExercises: 0,
-};
-
-const mockRecentActivity: Array<{
-  id: string;
-  type: 'completed' | 'reviewed' | 'started';
-  chapter: string;
-  timestamp: string;
-}> = [];
-
-const mockUpcomingReviews: Array<{
-  id: string;
-  chapter: string;
-  dueDate: string;
-}> = [];
-
-export default function DashboardPage() {
+export default async function DashboardPage() {
+  const [userStats, overallStats] = await Promise.all([
+    getUserStats(),
+    getOverallStats(),
+  ]);
   return (
     <div className="space-y-8">
       {/* Header */}
@@ -70,28 +53,28 @@ export default function DashboardPage() {
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <StatCard
             label="Due for Review"
-            value={mockStats.dueForReview.toString()}
+            value={userStats.reviewsDue.toString()}
             unit="cards"
             icon={RotateCcw}
             description="Exercises ready for review"
           />
           <StatCard
             label="Accuracy"
-            value={mockStats.accuracy?.toString() ?? '—'}
+            value={userStats.accuracy > 0 ? userStats.accuracy.toString() : '—'}
             unit="%"
             icon={Target}
             description="Overall answer accuracy"
           />
           <StatCard
             label="Streak"
-            value={mockStats.streak.toString()}
+            value={userStats.streak.toString()}
             unit="days"
             icon={Flame}
             description="Consecutive study days"
           />
           <StatCard
             label="Completed"
-            value={mockStats.completedExercises.toString()}
+            value={overallStats.totalAttempts.toString()}
             unit="exercises"
             icon={CheckCircle2}
             description="Total exercises completed"
@@ -114,22 +97,31 @@ export default function DashboardPage() {
             <CardContent className="p-0">
               <ScrollArea className="h-[400px]">
                 <div className="p-4 space-y-4">
-                  {chapters.map((ch) => (
-                    <div key={ch.id} className="space-y-2">
-                      <div className="flex items-center justify-between text-sm">
-                        <div className="flex items-center gap-2">
-                          <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary/10 text-xs font-medium text-primary">
-                            {ch.id}
+                  {chapters.map((ch) => {
+                    const chapterStats = overallStats.chapterBreakdown.find(
+                      (cb) => cb.chapterId === ch.id
+                    );
+                    const attempts = chapterStats?.attempts ?? 0;
+                    const correct = chapterStats?.correct ?? 0;
+                    const accuracy = chapterStats?.accuracy ?? 0;
+
+                    return (
+                      <div key={ch.id} className="space-y-2">
+                        <div className="flex items-center justify-between text-sm">
+                          <div className="flex items-center gap-2">
+                            <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary/10 text-xs font-medium text-primary">
+                              {ch.id}
+                            </span>
+                            <span className="font-medium">{ch.title}</span>
+                          </div>
+                          <span className="text-muted-foreground text-xs">
+                            {correct} / {attempts} correct
                           </span>
-                          <span className="font-medium">{ch.title}</span>
                         </div>
-                        <span className="text-muted-foreground text-xs">
-                          0 / 0 completed
-                        </span>
+                        <Progress value={accuracy} className="h-2" />
                       </div>
-                      <Progress value={0} className="h-2" />
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </ScrollArea>
             </CardContent>

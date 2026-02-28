@@ -46,6 +46,10 @@ export const progress = sqliteTable(
       .$defaultFn(() => Date.now()),
     accuracy: real('accuracy').notNull(),
     attempts: integer('attempts').notNull().default(1),
+    difficulty: text('difficulty', {
+      enum: ['easy', 'medium', 'hard'],
+    }),
+    isCorrect: integer('is_correct', { mode: 'boolean' }),
   },
   (table) => ({
     userIdIdx: index('progress_user_id_idx').on(table.userId),

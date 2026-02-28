@@ -6,6 +6,7 @@ import { notFound } from 'next/navigation';
 import { chapters } from '@/lib/chapters';
 import ExerciseCard from '@/components/ExerciseCard';
 import MathDisplay from '@/components/MathDisplay';
+import { recordPracticeAttempt } from '@/lib/stats-actions';
 import type { Difficulty, Exercise } from '@enge401-mastery/exercise-generator';
 import {
   generateAlgebraExercise,
@@ -37,7 +38,6 @@ import {
   CheckCircle2,
   HelpCircle,
   BookOpen,
-  TrendingUp,
 } from 'lucide-react';
 
 const exerciseGenerators: Record<number, (difficulty: Difficulty) => Exercise> = {
@@ -47,6 +47,15 @@ const exerciseGenerators: Record<number, (difficulty: Difficulty) => Exercise> =
   4: generateDifferentiationExercise,
   5: generateIntegrationExercise,
   6: generateDiffeqExercise,
+};
+
+const exerciseTypeMap: Record<number, string> = {
+  1: 'algebra',
+  2: 'trig',
+  3: 'exponential',
+  4: 'differentiation',
+  5: 'integration',
+  6: 'diffeq',
 };
 
 interface PageProps {
@@ -59,7 +68,6 @@ export default function ChapterPracticePage({ params }: PageProps) {
   const [exercise, setExercise] = useState<Exercise | null>(null);
   const [exerciseKey, setExerciseKey] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
-  const [sessionStats, setSessionStats] = useState({ attempted: 0, correct: 0 });
 
   // Resolve params
   useEffect(() => {
@@ -128,35 +136,6 @@ export default function ChapterPracticePage({ params }: PageProps) {
         </div>
         <p className="text-muted-foreground">{chapter.title}</p>
       </div>
-
-      {/* Progress Overview */}
-      <Card>
-        <CardHeader className="pb-3">
-          <CardTitle className="text-sm font-medium flex items-center gap-2">
-            <TrendingUp className="h-4 w-4" />
-            Session Progress
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          <div className="flex items-center justify-between text-sm">
-            <span className="text-muted-foreground">
-              {sessionStats.attempted} exercises attempted
-            </span>
-            <span className="font-medium">
-              {sessionStats.attempted > 0
-                ? Math.round((sessionStats.correct / sessionStats.attempted) * 100)
-                : 0}% accuracy
-            </span>
-          </div>
-          <Progress 
-            value={sessionStats.attempted > 0 
-              ? (sessionStats.correct / sessionStats.attempted) * 100 
-              : 0
-            } 
-            className="h-2" 
-          />
-        </CardContent>
-      </Card>
 
       {/* Controls */}
       <Card>
@@ -244,11 +223,20 @@ export default function ChapterPracticePage({ params }: PageProps) {
                 question=""
                 answer={exercise.answer}
                 hints={exercise.hints}
-                onAttempt={(correct) => {
-                  setSessionStats((prev) => ({
-                    attempted: prev.attempted + 1,
-                    correct: prev.correct + (correct ? 1 : 0),
-                  }));
+                difficulty={selectedDifficulty}
+                chapterId={chapterId}
+                onAttempt={async (correct, metadata) => {
+                  try {
+                    await recordPracticeAttempt({
+                      chapterId: chapterId!,
+                      exerciseType: exerciseTypeMap[chapterId!] || 'unknown',
+                      difficulty: selectedDifficulty,
+                      isCorrect: correct,
+                      accuracy: correct ? 1 : 0,
+                    });
+                  } catch (error) {
+                    console.error('Failed to record practice attempt:', error);
+                  }
                 }}
               />
             </CardContent>

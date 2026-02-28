@@ -18,17 +18,26 @@ import {
 import { Separator } from '@/components/ui/separator';
 import { Lightbulb, CheckCircle2, XCircle, RotateCcw, ChevronDown } from 'lucide-react';
 
+interface AttemptMetadata {
+  difficulty?: string;
+  chapterId?: number;
+}
+
 interface ExerciseCardProps {
   question: string;
   answer: string | number;
   hints?: string[];
-  onAttempt?: (correct: boolean) => void;
+  difficulty?: string;
+  chapterId?: number;
+  onAttempt?: (correct: boolean, metadata?: AttemptMetadata) => void;
 }
 
 export default function ExerciseCard({
   question,
   answer,
   hints = [],
+  difficulty,
+  chapterId,
   onAttempt,
 }: ExerciseCardProps) {
   const [userAnswer, setUserAnswer] = useState('');
@@ -42,7 +51,11 @@ export default function ExerciseCard({
   const handleSubmit = () => {
     if (!userAnswer.trim()) return;
     setSubmitted(true);
-    onAttempt?.(isCorrect);
+    const metadata: AttemptMetadata | undefined =
+      difficulty !== undefined || chapterId !== undefined
+        ? { difficulty, chapterId }
+        : undefined;
+    onAttempt?.(isCorrect, metadata);
   };
 
   const handleReset = () => {

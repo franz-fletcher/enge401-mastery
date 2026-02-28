@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { chapters } from '@/lib/chapters';
 import ExerciseCard from '@/components/ExerciseCard';
 import MathDisplay from '@/components/MathDisplay';
+import { recordPracticeAttempt } from '@/lib/stats-actions';
 import type { Difficulty, Exercise } from '@enge401-mastery/exercise-generator';
 import {
   generateAlgebraExercise,
@@ -51,6 +52,15 @@ const exerciseGenerators: Record<number, (difficulty: Difficulty) => Exercise> =
   6: generateDiffeqExercise,
 };
 
+const exerciseTypeMap: Record<number, string> = {
+  1: 'algebra',
+  2: 'trig',
+  3: 'exponential',
+  4: 'differentiation',
+  5: 'integration',
+  6: 'diffeq',
+};
+
 const difficultyConfig = {
   easy: { label: 'Easy', color: 'bg-green-500', icon: CheckCircle2 },
   medium: { label: 'Medium', color: 'bg-yellow-500', icon: Target },
@@ -63,7 +73,6 @@ export default function PracticePage() {
   const [exercise, setExercise] = useState<Exercise | null>(null);
   const [exerciseKey, setExerciseKey] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
-  const [sessionStats, setSessionStats] = useState({ attempted: 0, correct: 0 });
 
   const generateExercise = useCallback(async () => {
     setIsLoading(true);
@@ -170,16 +179,6 @@ export default function PracticePage() {
             <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
             {isLoading ? 'Generating...' : 'New Question'}
           </Button>
-          
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <span>Session:</span>
-            <Badge variant="outline">
-              {sessionStats.attempted} attempted
-            </Badge>
-            <Badge variant="outline" className="bg-green-500/10">
-              {sessionStats.correct} correct
-            </Badge>
-          </div>
         </CardFooter>
       </Card>
 
@@ -228,11 +227,20 @@ export default function PracticePage() {
                 question=""
                 answer={exercise.answer}
                 hints={exercise.hints}
-                onAttempt={(correct) => {
-                  setSessionStats((prev) => ({
-                    attempted: prev.attempted + 1,
-                    correct: prev.correct + (correct ? 1 : 0),
-                  }));
+                difficulty={selectedDifficulty}
+                chapterId={selectedChapter}
+                onAttempt={async (correct, metadata) => {
+                  try {
+                    await recordPracticeAttempt({
+                      chapterId: selectedChapter,
+                      exerciseType: exerciseTypeMap[selectedChapter] || 'unknown',
+                      difficulty: selectedDifficulty,
+                      isCorrect: correct,
+                      accuracy: correct ? 1 : 0,
+                    });
+                  } catch (error) {
+                    console.error('Failed to record practice attempt:', error);
+                  }
                 }}
               />
             </CardContent>
