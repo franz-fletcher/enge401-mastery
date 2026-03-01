@@ -328,3 +328,206 @@ test.describe('Spaced Repetition Review', () => {
     });
   });
 });
+
+test.describe('Exercise History Review', () => {
+  test('should display review page header and description', async ({ page }) => {
+    await page.goto('/review');
+    
+    // Check header is visible
+    await expect(page.getByTestId('review-header')).toBeVisible();
+    
+    // Check heading "Review" is visible
+    await expect(page.getByRole('heading', { name: /review/i })).toBeVisible();
+    
+    // Check description text about filtering is visible
+    await expect(page.getByText(/filter/i)).toBeVisible();
+  });
+
+  test('should show filter dropdown with options', async ({ page }) => {
+    await page.goto('/review');
+    
+    // Check Select dropdown is visible (Radix UI Select trigger)
+    const filterSelect = page.locator('[role="combobox"], button[aria-haspopup="listbox"]').first();
+    await expect(filterSelect).toBeVisible();
+    
+    // Click to open dropdown
+    await filterSelect.click();
+    
+    // Verify it contains All, Correct, Incorrect options
+    await expect(page.getByRole('option', { name: /all/i })).toBeVisible();
+    await expect(page.getByRole('option', { name: /correct/i })).toBeVisible();
+    await expect(page.getByRole('option', { name: /incorrect/i })).toBeVisible();
+  });
+
+  test('should filter exercises by correctness', async ({ page }) => {
+    await page.goto('/review');
+    
+    // Open filter dropdown
+    const filterSelect = page.locator('[role="combobox"], button[aria-haspopup="listbox"]').first();
+    await filterSelect.click();
+    
+    // Select "Correct" option
+    await page.getByRole('option', { name: /correct/i }).click();
+    
+    // Verify URL updates to include filter parameter
+    await expect(page).toHaveURL(/filter=correct/);
+    
+    // Verify "Showing correct exercises" text appears
+    await expect(page.getByText(/showing correct exercises/i)).toBeVisible();
+  });
+
+  test('should display exercise cards with math content', async ({ page }) => {
+    await page.goto('/review');
+    
+    // Wait for exercise list to be visible
+    await expect(page.getByTestId('exercise-list')).toBeVisible();
+    
+    // Verify exercise cards are visible
+    const exerciseCards = page.locator('[data-testid="exercise-list"] > *').first();
+    await expect(exerciseCards.or(page.getByTestId('empty-state'))).toBeVisible();
+    
+    // If exercises exist, verify math content is rendered
+    const hasExercises = await page.locator('.katex, .katex-display').count() > 0;
+    const isEmptyState = await page.getByTestId('empty-state').isVisible().catch(() => false);
+    
+    // Either we have exercises with math or we're in empty state
+    expect(hasExercises || isEmptyState).toBeTruthy();
+  });
+
+  test('should show correctness badges', async ({ page }) => {
+    await page.goto('/review');
+    
+    // Wait for content to load
+    await page.waitForTimeout(500);
+    
+    // Check if we're in empty state
+    const isEmptyState = await page.getByTestId('empty-state').isVisible().catch(() => false);
+    
+    if (!isEmptyState) {
+      // Verify badges show "Correct" or "Incorrect" with icons
+      const correctBadge = page.getByText(/correct/i).filter({ has: page.locator('svg') }).first();
+      const incorrectBadge = page.getByText(/incorrect/i).filter({ has: page.locator('svg') }).first();
+      
+      // At least one type of badge should be visible if there are exercises
+      await expect(correctBadge.or(incorrectBadge)).toBeVisible();
+    }
+  });
+
+  test('should expand answer and hints section', async ({ page }) => {
+    await page.goto('/review');
+    
+    // Wait for content to load
+    await page.waitForTimeout(500);
+    
+    // Check if we're in empty state
+    const isEmptyState = await page.getByTestId('empty-state').isVisible().catch(() => false);
+    
+    if (!isEmptyState) {
+      // Click "Show Answer & Hints" button
+      const showAnswerButton = page.getByRole('button', { name: /show answer.*hints/i });
+      await expect(showAnswerButton).toBeVisible();
+      await showAnswerButton.click();
+      
+      // Verify answer section appears
+      await expect(page.getByText(/answer/i)).toBeVisible();
+      
+      // Verify hints list appears if hints exist (check for hints section)
+      const hintsSection = page.getByText(/hint/i);
+      const hasHints = await hintsSection.isVisible().catch(() => false);
+      
+      // Either hints are shown or no hints available message
+      if (hasHints) {
+        await expect(hintsSection).toBeVisible();
+      }
+    }
+  });
+
+  test('should show empty state for filter with no results', async ({ page }) => {
+    // Navigate to filter that likely has no results
+    await page.goto('/review?filter=incorrect');
+    
+    // Wait for content to load
+    await page.waitForTimeout(500);
+    
+    // Check if empty state is shown
+    const isEmptyState = await page.getByTestId('empty-state').isVisible().catch(() => false);
+    
+    if (isEmptyState) {
+      // Verify empty state message
+      await expect(page.getByTestId('empty-state')).toBeVisible();
+      await expect(page.getByText(/no exercises/i)).toBeVisible();
+      
+      // Verify "Start Practicing" button
+      await expect(page.getByRole('link', { name: /start practicing/i })).toBeVisible();
+    }
+  });
+
+  test('should preserve filter in pagination', async ({ page }) => {
+    // Navigate with filter and page parameters
+    await page.goto('/review?filter=correct&page=1');
+    
+    // Wait for pagination to be visible
+    await expect(page.getByTestId('pagination')).toBeVisible();
+    
+    // Check if next page button exists and is enabled
+    const nextPageButton = page.getByTestId('next-page');
+    const hasNextPage = await nextPageButton.isVisible().catch(() => false);
+    const isNextDisabled = await nextPageButton.isDisabled().catch(() => true);
+    
+    if (hasNextPage && !isNextDisabled) {
+      // Click Next page
+      await nextPageButton.click();
+      
+      // Wait for navigation
+      await page.waitForTimeout(500);
+      
+      // Verify URL still has filter=correct parameter
+      await expect(page).toHaveURL(/filter=correct/);
+    }
+  });
+
+  test('should display exercise metadata', async ({ page }) => {
+    await page.goto('/review');
+    
+    // Wait for content to load
+    await page.waitForTimeout(500);
+    
+    // Check if we're in empty state
+    const isEmptyState = await page.getByTestId('empty-state').isVisible().catch(() => false);
+    
+    if (!isEmptyState) {
+      // Verify chapter info visible
+      await expect(page.getByText(/chapter/i).first()).toBeVisible();
+      
+      // Verify difficulty badge visible
+      const difficultyBadge = page.locator('[class*="badge"]').filter({ hasText: /easy|medium|hard/i }).first();
+      await expect(difficultyBadge).toBeVisible();
+      
+      // Verify completion date visible
+      await expect(page.getByText(/\d{1,2}\/\d{1,2}\/\d{4}|\d{4}-\d{2}-\d{2}/i).first()).toBeVisible();
+      
+      // Verify accuracy percentage visible
+      await expect(page.getByText(/\d+%/).first()).toBeVisible();
+    }
+  });
+
+  test('should show unauthenticated state', async ({ page }) => {
+    // Navigate to review page
+    await page.goto('/review');
+    
+    // Wait for content to load
+    await page.waitForTimeout(500);
+    
+    // Check if unauthenticated state is shown
+    const isUnauthenticated = await page.getByTestId('unauthenticated-state').isVisible().catch(() => false);
+    
+    if (isUnauthenticated) {
+      // Verify sign-in prompt is visible
+      await expect(page.getByTestId('unauthenticated-state')).toBeVisible();
+      await expect(page.getByText(/sign in/i)).toBeVisible();
+      
+      // Verify sign-in button/link exists
+      await expect(page.getByRole('button', { name: /sign in/i }).or(page.getByRole('link', { name: /sign in/i }))).toBeVisible();
+    }
+  });
+});

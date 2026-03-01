@@ -252,12 +252,18 @@ export async function recordPracticeAttempt({
   difficulty,
   isCorrect,
   accuracy,
+  question,
+  answer,
+  hints,
 }: {
   chapterId: number;
   exerciseType: string;
   difficulty: 'easy' | 'medium' | 'hard';
   isCorrect: boolean;
   accuracy: number;
+  question?: string;
+  answer?: string;
+  hints?: string;
 }) {
   const session = await auth();
   
@@ -273,6 +279,9 @@ export async function recordPracticeAttempt({
       difficulty,
       isCorrect: isCorrect ? 1 : 0,
       accuracy,
+      question: question ?? null,
+      answer: answer ?? null,
+      hints: hints ? JSON.stringify(hints) : null,
       completedAt: new Date(),
     });
 
@@ -337,6 +346,19 @@ export interface CorrectlyAnsweredExercisesResult {
   currentPage: number;
 }
 
+export interface AttemptedExercise extends CorrectlyAnsweredExercise {
+  question: string | null;
+  answer: string | null;
+  hints: string[];
+}
+
+export interface AttemptedExercisesResult {
+  exercises: AttemptedExercise[];
+  totalCount: number;
+  totalPages: number;
+  currentPage: number;
+}
+
 export async function getCorrectlyAnsweredExercises(
   page: number = 1,
   limit: number = 5
@@ -384,6 +406,93 @@ export async function getCorrectlyAnsweredExercises(
       difficulty: entry.difficulty,
       completedAt: entry.completedAt ?? new Date(),
       accuracy: entry.accuracy,
+    };
+  });
+
+  return {
+    exercises,
+    totalCount,
+    totalPages,
+    currentPage: page,
+  };
+}
+
+export async function getAllExercises(
+  page: number = 1,
+  limit: number = 5,
+  filter: 'all' | 'correct' | 'incorrect' = 'all'
+): Promise<AttemptedExercisesResult> {
+  const session = await auth();
+
+  if (!session?.user?.id) {
+    return {
+      exercises: [],
+      totalCount: 0,
+      totalPages: 0,
+      currentPage: page,
+    };
+  }
+
+  const userId = session.user.id;
+  const offset = (page - 1) * limit;
+
+  // Build where clause based on filter
+  let whereClause;
+  if (filter === 'correct') {
+    whereClause = and(eq(progress.userId, userId), eq(progress.isCorrect, 1));
+  } else if (filter === 'incorrect') {
+    whereClause = and(eq(progress.userId, userId), eq(progress.isCorrect, 0));
+  } else {
+    whereClause = eq(progress.userId, userId);
+  }
+
+  // Get total count
+  const countResult = await db
+    .select({ count: sql<number>`count(*)` })
+    .from(progress)
+    .where(whereClause);
+
+  const totalCount = countResult[0]?.count ?? 0;
+  const totalPages = Math.ceil(totalCount / limit);
+
+  // Get paginated results
+  const progressEntries = await db
+    .select()
+    .from(progress)
+    .where(whereClause)
+    .orderBy(desc(progress.completedAt))
+    .limit(limit)
+    .offset(offset);
+
+  // Map to exercise data with chapter titles and parse hints
+  const exercises: AttemptedExercise[] = progressEntries.map(entry => {
+    const chapter = chapters.find(c => c.id === entry.chapterId);
+    
+    // Parse hints from JSON string with error handling
+    let hints: string[] = [];
+    if (entry.hints) {
+      try {
+        const parsed = JSON.parse(entry.hints);
+        if (Array.isArray(parsed)) {
+          hints = parsed;
+        }
+      } catch {
+        // If parsing fails, return empty array
+        hints = [];
+      }
+    }
+
+    return {
+      id: entry.id,
+      chapterId: entry.chapterId,
+      chapterTitle: chapter?.title ?? `Chapter ${entry.chapterId}`,
+      exerciseType: entry.exerciseType,
+      difficulty: entry.difficulty,
+      completedAt: entry.completedAt ?? new Date(),
+      accuracy: entry.accuracy,
+      question: entry.question,
+      answer: entry.answer,
+      hints,
     };
   });
 

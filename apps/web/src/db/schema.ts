@@ -50,6 +50,9 @@ export const progress = sqliteTable(
       enum: ['easy', 'medium', 'hard'],
     }),
     isCorrect: integer('is_correct', { mode: 'boolean' }),
+    question: text('question'),
+    answer: text('answer'),
+    hints: text('hints'),
   },
   (table) => ({
     userIdIdx: index('progress_user_id_idx').on(table.userId),

@@ -233,6 +233,9 @@ export default function ChapterPracticePage({ params }: PageProps) {
                       difficulty: selectedDifficulty,
                       isCorrect: correct,
                       accuracy: correct ? 1 : 0,
+                      question: exercise.question,
+                      answer: String(exercise.answer),
+                      hints: exercise.hints,
                     });
                   } catch (error) {
                     console.error('Failed to record practice attempt:', error);
