@@ -263,7 +263,7 @@ export async function recordPracticeAttempt({
   accuracy: number;
   question?: string;
   answer?: string;
-  hints?: string;
+  hints?: string[];
 }) {
   const session = await auth();
   
