@@ -9,6 +9,7 @@ import {
   ChevronRight,
   FileText,
   Flame,
+  History,
   Home,
   LayoutDashboard,
   Library,
@@ -54,6 +55,11 @@ const mainNavItems = [
     title: 'Practice',
     url: '/practice',
     icon: BookOpen,
+  },
+  {
+    title: 'Review',
+    url: '/review',
+    icon: History,
   },
   {
     title: 'Dashboard',

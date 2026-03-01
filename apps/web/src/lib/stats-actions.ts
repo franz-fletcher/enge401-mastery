@@ -3,7 +3,8 @@
 import { auth } from '@/auth';
 import { db } from '@/db';
 import { progress, spacedRepetition, studySessions } from '@/db/schema';
-import { eq, and, gte, sql } from 'drizzle-orm';
+import { eq, and, gte, sql, desc } from 'drizzle-orm';
+import { chapters } from '@/lib/chapters';
 import { startOfDay, endOfDay } from 'date-fns';
 
 export interface UserStats {
@@ -316,6 +317,81 @@ export async function getChapterStats(chapterId: number): Promise<ChapterStats> 
     correctAttempts,
     accuracy,
     attemptsByDifficulty,
+  };
+}
+
+export interface CorrectlyAnsweredExercise {
+  id: string;
+  chapterId: number;
+  chapterTitle: string;
+  exerciseType: string;
+  difficulty: 'easy' | 'medium' | 'hard' | null;
+  completedAt: Date;
+  accuracy: number;
+}
+
+export interface CorrectlyAnsweredExercisesResult {
+  exercises: CorrectlyAnsweredExercise[];
+  totalCount: number;
+  totalPages: number;
+  currentPage: number;
+}
+
+export async function getCorrectlyAnsweredExercises(
+  page: number = 1,
+  limit: number = 5
+): Promise<CorrectlyAnsweredExercisesResult> {
+  const session = await auth();
+
+  if (!session?.user?.id) {
+    return {
+      exercises: [],
+      totalCount: 0,
+      totalPages: 0,
+      currentPage: page,
+    };
+  }
+
+  const userId = session.user.id;
+  const offset = (page - 1) * limit;
+
+  // Get total count of correct answers
+  const countResult = await db
+    .select({ count: sql<number>`count(*)` })
+    .from(progress)
+    .where(and(eq(progress.userId, userId), eq(progress.isCorrect, 1)));
+
+  const totalCount = countResult[0]?.count ?? 0;
+  const totalPages = Math.ceil(totalCount / limit);
+
+  // Get paginated correct answers
+  const correctProgress = await db
+    .select()
+    .from(progress)
+    .where(and(eq(progress.userId, userId), eq(progress.isCorrect, 1)))
+    .orderBy(desc(progress.completedAt))
+    .limit(limit)
+    .offset(offset);
+
+  // Map to exercise data with chapter titles
+  const exercises: CorrectlyAnsweredExercise[] = correctProgress.map(entry => {
+    const chapter = chapters.find(c => c.id === entry.chapterId);
+    return {
+      id: entry.id,
+      chapterId: entry.chapterId,
+      chapterTitle: chapter?.title ?? `Chapter ${entry.chapterId}`,
+      exerciseType: entry.exerciseType,
+      difficulty: entry.difficulty,
+      completedAt: entry.completedAt ?? new Date(),
+      accuracy: entry.accuracy,
+    };
+  });
+
+  return {
+    exercises,
+    totalCount,
+    totalPages,
+    currentPage: page,
   };
 }
 

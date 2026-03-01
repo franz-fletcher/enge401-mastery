@@ -30,6 +30,7 @@ interface ExerciseCardProps {
   difficulty?: string;
   chapterId?: number;
   onAttempt?: (correct: boolean, metadata?: AttemptMetadata) => void;
+  onCorrectAnswer?: () => void;
 }
 
 export default function ExerciseCard({
@@ -39,6 +40,7 @@ export default function ExerciseCard({
   difficulty,
   chapterId,
   onAttempt,
+  onCorrectAnswer,
 }: ExerciseCardProps) {
   const [userAnswer, setUserAnswer] = useState('');
   const [submitted, setSubmitted] = useState(false);
@@ -50,12 +52,17 @@ export default function ExerciseCard({
 
   const handleSubmit = () => {
     if (!userAnswer.trim()) return;
+    const correct =
+      userAnswer.trim().toLowerCase() === String(answer).trim().toLowerCase();
     setSubmitted(true);
     const metadata: AttemptMetadata | undefined =
       difficulty !== undefined || chapterId !== undefined
         ? { difficulty, chapterId }
         : undefined;
-    onAttempt?.(isCorrect, metadata);
+    onAttempt?.(correct, metadata);
+    if (correct) {
+      onCorrectAnswer?.();
+    }
   };
 
   const handleReset = () => {

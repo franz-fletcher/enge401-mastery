@@ -242,6 +242,7 @@ export default function PracticePage() {
                     console.error('Failed to record practice attempt:', error);
                   }
                 }}
+                onCorrectAnswer={generateExercise}
               />
             </CardContent>
           </Card>

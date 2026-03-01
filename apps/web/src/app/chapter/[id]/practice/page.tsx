@@ -238,6 +238,12 @@ export default function ChapterPracticePage({ params }: PageProps) {
                     console.error('Failed to record practice attempt:', error);
                   }
                 }}
+                onCorrectAnswer={() => {
+                  // Auto-advance to next exercise after a short delay
+                  setTimeout(() => {
+                    generateExercise();
+                  }, 1500);
+                }}
               />
             </CardContent>
           </Card>
