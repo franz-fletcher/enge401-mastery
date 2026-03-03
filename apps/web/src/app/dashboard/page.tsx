@@ -33,6 +33,10 @@ export default async function DashboardPage() {
     getUserStats(),
     getOverallStats(),
   ]);
+
+  // TODO: Replace with actual data fetching when review system is implemented
+  const mockUpcomingReviews: Array<{ id: string; chapter: string; dueDate: string }> = [];
+  const mockRecentActivity: Array<{ id: string; type: 'completed' | 'reviewed' | 'started'; chapter: string; timestamp: string }> = [];
   return (
     <div className="space-y-8">
       {/* Header */}

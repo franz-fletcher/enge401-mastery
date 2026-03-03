@@ -19,10 +19,10 @@ export const users = sqliteTable(
     anonymousId: text('anonymous_id').notNull().unique(),
     createdAt: integer('created_at', { mode: 'timestamp_ms' })
       .notNull()
-      .$defaultFn(() => Date.now()),
+      .$defaultFn(() => new Date()),
     lastActiveAt: integer('last_active_at', { mode: 'timestamp_ms' })
       .notNull()
-      .$defaultFn(() => Date.now()),
+      .$defaultFn(() => new Date()),
   },
   (table) => ({
     anonymousIdIdx: uniqueIndex('anonymous_id_idx').on(table.anonymousId),
@@ -43,7 +43,7 @@ export const progress = sqliteTable(
     exerciseType: text('exercise_type').notNull(),
     completedAt: integer('completed_at', { mode: 'timestamp_ms' })
       .notNull()
-      .$defaultFn(() => Date.now()),
+      .$defaultFn(() => new Date()),
     accuracy: real('accuracy').notNull(),
     attempts: integer('attempts').notNull().default(1),
     difficulty: text('difficulty', {
@@ -84,10 +84,10 @@ export const spacedRepetition = sqliteTable(
     repetitions: integer('repetitions').notNull().default(0),
     createdAt: integer('created_at', { mode: 'timestamp_ms' })
       .notNull()
-      .$defaultFn(() => Date.now()),
+      .$defaultFn(() => new Date()),
     updatedAt: integer('updated_at', { mode: 'timestamp_ms' })
       .notNull()
-      .$defaultFn(() => Date.now()),
+      .$defaultFn(() => new Date()),
   },
   (table) => ({
     userIdIdx: index('sr_user_id_idx').on(table.userId),
@@ -112,7 +112,7 @@ export const studySessions = sqliteTable(
       .references(() => users.id, { onDelete: 'cascade' }),
     startedAt: integer('started_at', { mode: 'timestamp_ms' })
       .notNull()
-      .$defaultFn(() => Date.now()),
+      .$defaultFn(() => new Date()),
     endedAt: integer('ended_at', { mode: 'timestamp_ms' }),
     exercisesCompleted: integer('exercises_completed').notNull().default(0),
     accuracy: real('accuracy'),
@@ -143,7 +143,7 @@ export const calendarEvents = sqliteTable(
       .default(false),
     createdAt: integer('created_at', { mode: 'timestamp_ms' })
       .notNull()
-      .$defaultFn(() => Date.now()),
+      .$defaultFn(() => new Date()),
   },
   (table) => ({
     userIdIdx: index('calendar_user_id_idx').on(table.userId),

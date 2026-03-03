@@ -45,7 +45,7 @@ export async function getUserStats(): Promise<UserStats> {
       and(
         eq(progress.userId, userId),
         gte(progress.completedAt, todayStart),
-        sql`${progress.completedAt} <= ${todayEnd}`
+        sql`${progress.completedAt} <= ${todayEnd.getTime()}`
       )
     );
 
@@ -63,7 +63,7 @@ export async function getUserStats(): Promise<UserStats> {
     .where(
       and(
         eq(spacedRepetition.userId, userId),
-        sql`${spacedRepetition.nextReviewAt} <= ${now}`
+        sql`${spacedRepetition.nextReviewAt} <= ${now.getTime()}`
       )
     );
 
@@ -145,7 +145,7 @@ export async function getStudyDays(month: Date): Promise<StudyDay[]> {
       and(
         eq(progress.userId, userId),
         gte(progress.completedAt, monthStart),
-        sql`${progress.completedAt} <= ${monthEnd}`
+        sql`${progress.completedAt} <= ${monthEnd.getTime()}`
       )
     )
     .groupBy(sql`date(${progress.completedAt})`);
@@ -162,7 +162,7 @@ export async function getStudyDays(month: Date): Promise<StudyDay[]> {
         eq(spacedRepetition.userId, userId),
         sql`${spacedRepetition.updatedAt} IS NOT NULL`,
         gte(spacedRepetition.updatedAt, monthStart),
-        sql`${spacedRepetition.updatedAt} <= ${monthEnd}`
+        sql`${spacedRepetition.updatedAt} <= ${monthEnd.getTime()}`
       )
     )
     .groupBy(sql`date(${spacedRepetition.updatedAt})`);
@@ -216,7 +216,7 @@ export async function getReviewDueDates(): Promise<Date[]> {
       and(
         eq(spacedRepetition.userId, userId),
         gte(spacedRepetition.nextReviewAt, today),
-        sql`${spacedRepetition.nextReviewAt} <= ${thirtyDaysFromNow}`
+        sql`${spacedRepetition.nextReviewAt} <= ${thirtyDaysFromNow.getTime()}`
       )
     );
 
@@ -277,7 +277,7 @@ export async function recordPracticeAttempt({
       chapterId,
       exerciseType,
       difficulty,
-      isCorrect: isCorrect ? 1 : 0,
+      isCorrect: isCorrect,
       accuracy,
       question: question ?? null,
       answer: answer ?? null,
@@ -381,7 +381,7 @@ export async function getCorrectlyAnsweredExercises(
   const countResult = await db
     .select({ count: sql<number>`count(*)` })
     .from(progress)
-    .where(and(eq(progress.userId, userId), eq(progress.isCorrect, 1)));
+    .where(and(eq(progress.userId, userId), eq(progress.isCorrect, true)));
 
   const totalCount = countResult[0]?.count ?? 0;
   const totalPages = Math.ceil(totalCount / limit);
@@ -390,7 +390,7 @@ export async function getCorrectlyAnsweredExercises(
   const correctProgress = await db
     .select()
     .from(progress)
-    .where(and(eq(progress.userId, userId), eq(progress.isCorrect, 1)))
+    .where(and(eq(progress.userId, userId), eq(progress.isCorrect, true)))
     .orderBy(desc(progress.completedAt))
     .limit(limit)
     .offset(offset);
@@ -439,9 +439,9 @@ export async function getAllExercises(
   // Build where clause based on filter
   let whereClause;
   if (filter === 'correct') {
-    whereClause = and(eq(progress.userId, userId), eq(progress.isCorrect, 1));
+    whereClause = and(eq(progress.userId, userId), eq(progress.isCorrect, true));
   } else if (filter === 'incorrect') {
-    whereClause = and(eq(progress.userId, userId), eq(progress.isCorrect, 0));
+    whereClause = and(eq(progress.userId, userId), eq(progress.isCorrect, false));
   } else {
     whereClause = eq(progress.userId, userId);
   }
