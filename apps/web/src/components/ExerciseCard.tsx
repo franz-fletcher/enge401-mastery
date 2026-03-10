@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import MathDisplay from './MathDisplay';
+import SolutionPanel from './SolutionPanel';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -17,6 +18,7 @@ import {
 } from '@/components/ui/collapsible';
 import { Separator } from '@/components/ui/separator';
 import { Lightbulb, CheckCircle2, XCircle, RotateCcw, ChevronDown } from 'lucide-react';
+import type { Solution } from '@enge401-mastery/step-solver';
 
 interface AttemptMetadata {
   difficulty?: string;
@@ -29,6 +31,7 @@ interface ExerciseCardProps {
   hints?: string[];
   difficulty?: string;
   chapterId?: number;
+  solution?: Solution;
   onAttempt?: (correct: boolean, metadata?: AttemptMetadata) => void;
   onCorrectAnswer?: () => void;
 }
@@ -39,12 +42,14 @@ export default function ExerciseCard({
   hints = [],
   difficulty,
   chapterId,
+  solution,
   onAttempt,
   onCorrectAnswer,
 }: ExerciseCardProps) {
   const [userAnswer, setUserAnswer] = useState('');
   const [submitted, setSubmitted] = useState(false);
   const [hintsShown, setHintsShown] = useState(0);
+  const [showSolution, setShowSolution] = useState(false);
 
   const isCorrect =
     submitted &&
@@ -69,6 +74,7 @@ export default function ExerciseCard({
     setSubmitted(false);
     setUserAnswer('');
     setHintsShown(0);
+    setShowSolution(false);
   };
 
   return (
@@ -153,7 +159,7 @@ export default function ExerciseCard({
             </div>
           </CardContent>
           <Separator />
-          <CardFooter className="p-3">
+          <CardFooter className="p-3 flex flex-col items-stretch gap-2">
             <Button
               variant="ghost"
               size="sm"
@@ -163,6 +169,14 @@ export default function ExerciseCard({
               <RotateCcw className="h-4 w-4" />
               Try again
             </Button>
+            
+            {solution && (
+              <SolutionPanel
+                solution={solution}
+                isOpen={showSolution}
+                onOpenChange={setShowSolution}
+              />
+            )}
           </CardFooter>
         </Card>
       )}

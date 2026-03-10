@@ -1,5 +1,6 @@
 import { nanoid } from 'nanoid';
 import { eulerMethod } from '@enge401-mastery/math-engine';
+import { solveExercise } from '@enge401-mastery/step-solver';
 import type { Exercise, Difficulty } from './types';
 
 /**
@@ -14,7 +15,7 @@ export function generateDiffeqExercise(difficulty: Difficulty = 'easy'): Exercis
   const result = eulerMethod((_, y) => k * y, 0, y0, h, steps);
   const finalY = result[steps]!.y;
 
-  return {
+  const exercise: Exercise = {
     id: nanoid(),
     chapter: 6,
     topic: 'Differential Equations — Euler\'s Method',
@@ -26,4 +27,12 @@ export function generateDiffeqExercise(difficulty: Difficulty = 'easy'): Exercis
       `Here $f(x, y) = ${k}y$`,
     ],
   };
+
+  try {
+    (exercise as any).solution = solveExercise(exercise);
+  } catch (e) {
+    console.warn('Failed to generate solution for differential equation exercise:', e);
+  }
+
+  return exercise;
 }

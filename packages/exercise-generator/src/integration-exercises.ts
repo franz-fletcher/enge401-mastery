@@ -1,4 +1,5 @@
 import { nanoid } from 'nanoid';
+import { solveExercise } from '@enge401-mastery/step-solver';
 import type { Exercise, Difficulty } from './types';
 
 const INTEGRALS = [
@@ -20,7 +21,7 @@ function randomItem<T>(arr: T[]): T {
 export function generateIntegrationExercise(difficulty: Difficulty = 'easy'): Exercise {
   const item = randomItem(INTEGRALS);
 
-  return {
+  const exercise: Exercise = {
     id: nanoid(),
     chapter: 5,
     topic: 'Integration',
@@ -31,4 +32,12 @@ export function generateIntegrationExercise(difficulty: Difficulty = 'easy'): Ex
       'Apply the power rule for integration: $\\int x^n\\, dx = \\frac{x^{n+1}}{n+1} + C$',
     ],
   };
+
+  try {
+    (exercise as any).solution = solveExercise(exercise);
+  } catch (e) {
+    console.warn('Failed to generate solution for integration exercise:', e);
+  }
+
+  return exercise;
 }

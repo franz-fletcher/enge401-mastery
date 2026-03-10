@@ -225,6 +225,7 @@ export default function ChapterPracticePage({ params }: PageProps) {
                 hints={exercise.hints}
                 difficulty={selectedDifficulty}
                 chapterId={chapterId}
+                solution={exercise.solution}
                 onAttempt={async (correct, metadata) => {
                   try {
                     await recordPracticeAttempt({

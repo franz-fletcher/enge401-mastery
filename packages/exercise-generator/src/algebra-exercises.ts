@@ -1,5 +1,6 @@
 import { nanoid } from 'nanoid';
 import { solveLinearEquation, solveQuadratic } from '@enge401-mastery/math-engine';
+import { solveExercise } from '@enge401-mastery/step-solver';
 import type { Exercise, Difficulty } from './types';
 
 function randomInt(min: number, max: number): number {
@@ -16,7 +17,7 @@ export function generateLinearExercise(difficulty: Difficulty = 'easy'): Exercis
   const x = randomInt(-range, range);
   const c = a * x + b;
 
-  return {
+  const exercise: Exercise = {
     id: nanoid(),
     chapter: 1,
     topic: 'Linear Equations',
@@ -28,6 +29,16 @@ export function generateLinearExercise(difficulty: Difficulty = 'easy'): Exercis
       `Divide both sides by ${a}`,
     ],
   };
+
+  // Generate step-by-step solution
+  try {
+    exercise.solution = solveExercise(exercise);
+  } catch {
+    // If solver fails, exercise still works without solution
+    console.warn('Failed to generate solution for linear exercise');
+  }
+
+  return exercise;
 }
 
 /**
@@ -41,7 +52,7 @@ export function generateQuadraticExercise(difficulty: Difficulty = 'medium'): Ex
   const b = -(r1 + r2);
   const c = r1 * r2;
 
-  return {
+  const exercise: Exercise = {
     id: nanoid(),
     chapter: 1,
     topic: 'Quadratic Equations',
@@ -53,6 +64,16 @@ export function generateQuadraticExercise(difficulty: Difficulty = 'medium'): Ex
       `The discriminant is $b^2 - 4ac = ${b * b - 4 * a * c}$`,
     ],
   };
+
+  // Generate step-by-step solution
+  try {
+    exercise.solution = solveExercise(exercise);
+  } catch {
+    // If solver fails, exercise still works without solution
+    console.warn('Failed to generate solution for quadratic exercise');
+  }
+
+  return exercise;
 }
 
 /**

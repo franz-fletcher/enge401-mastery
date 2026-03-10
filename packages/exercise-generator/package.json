@@ -13,6 +13,7 @@
   },
   "dependencies": {
     "@enge401-mastery/math-engine": "workspace:*",
+    "@enge401-mastery/step-solver": "workspace:*",
     "nanoid": "^5.0.9"
   },
   "devDependencies": {

@@ -1,5 +1,6 @@
 import { nanoid } from 'nanoid';
 import { solveExponentialEquation, compoundGrowth } from '@enge401-mastery/math-engine';
+import { solveExercise } from '@enge401-mastery/step-solver';
 import type { Exercise, Difficulty } from './types';
 
 function randomInt(min: number, max: number): number {
@@ -15,7 +16,7 @@ export function generateExponentialExercise(difficulty: Difficulty = 'easy'): Ex
   const x = randomInt(1, difficulty === 'easy' ? 3 : 6);
   const result = Math.pow(base, x);
 
-  return {
+  const exercise: Exercise = {
     id: nanoid(),
     chapter: 3,
     topic: 'Exponential Equations',
@@ -27,6 +28,14 @@ export function generateExponentialExercise(difficulty: Difficulty = 'easy'): Ex
       `$x = \\frac{\\log(${result})}{\\log(${base})}$`,
     ],
   };
+
+  try {
+    (exercise as any).solution = solveExercise(exercise);
+  } catch (e) {
+    console.warn('Failed to generate solution for exponential exercise:', e);
+  }
+
+  return exercise;
 }
 
 /**
@@ -38,7 +47,7 @@ export function generateCompoundInterestExercise(difficulty: Difficulty = 'mediu
   const time = randomInt(1, 10);
   const answer = compoundGrowth(principal, rate, time, 12);
 
-  return {
+  const exercise: Exercise = {
     id: nanoid(),
     chapter: 3,
     topic: 'Compound Growth',
@@ -50,4 +59,12 @@ export function generateCompoundInterestExercise(difficulty: Difficulty = 'mediu
       `$P=${principal}$, $r=${rate}$, $n=12$, $t=${time}$`,
     ],
   };
+
+  try {
+    (exercise as any).solution = solveExercise(exercise);
+  } catch (e) {
+    console.warn('Failed to generate solution for compound interest exercise:', e);
+  }
+
+  return exercise;
 }

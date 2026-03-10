@@ -1,5 +1,6 @@
 import { nanoid } from 'nanoid';
 import { differentiate } from '@enge401-mastery/math-engine';
+import { solveExercise } from '@enge401-mastery/step-solver';
 import type { Exercise, Difficulty } from './types';
 
 const POLY_TERMS = [
@@ -23,7 +24,7 @@ function randomItem<T>(arr: T[]): T {
 export function generateDifferentiationExercise(difficulty: Difficulty = 'easy'): Exercise {
   const term = randomItem(POLY_TERMS);
 
-  return {
+  const exercise: Exercise = {
     id: nanoid(),
     chapter: 4,
     topic: 'Differentiation',
@@ -34,4 +35,12 @@ export function generateDifferentiationExercise(difficulty: Difficulty = 'easy')
       'Apply the power rule: $\\frac{d}{dx}[x^n] = nx^{n-1}$',
     ],
   };
+
+  try {
+    (exercise as any).solution = solveExercise(exercise);
+  } catch (e) {
+    console.warn('Failed to generate solution for differentiation exercise:', e);
+  }
+
+  return exercise;
 }

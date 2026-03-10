@@ -1,5 +1,6 @@
 import { nanoid } from 'nanoid';
 import { degreesToRadians, unitCircleValue } from '@enge401-mastery/math-engine';
+import { solveExercise } from '@enge401-mastery/step-solver';
 import type { Exercise, Difficulty, TrigFunction } from './types';
 
 const STANDARD_ANGLES = [0, 30, 45, 60, 90, 120, 135, 150, 180];
@@ -17,7 +18,7 @@ export function generateTrigExercise(difficulty: Difficulty = 'easy'): Exercise 
   const fn = randomItem(TRIG_FNS);
   const answer = unitCircleValue(angle, fn) ?? 'undefined';
 
-  return {
+  const exercise: Exercise = {
     id: nanoid(),
     chapter: 2,
     topic: 'Trigonometry — Unit Circle',
@@ -29,4 +30,12 @@ export function generateTrigExercise(difficulty: Difficulty = 'easy'): Exercise 
       'Use the unit circle to find the exact value',
     ],
   };
+
+  try {
+    (exercise as any).solution = solveExercise(exercise);
+  } catch (e) {
+    console.warn('Failed to generate solution for trig exercise:', e);
+  }
+
+  return exercise;
 }
