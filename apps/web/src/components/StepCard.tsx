@@ -121,7 +121,7 @@ export default function StepCard({ step, isRevealed, onReveal, isLast }: StepCar
               )}
 
               {step.metadata?.rule && (
-                <div className="text-xs text-muted-foreground italic">
+                <div className="text-sm text-muted-foreground italic whitespace-normal break-words">
                   Rule applied: {step.metadata.rule}
                 </div>
               )}

@@ -1,6 +1,6 @@
 'use client';
 
-import katex from 'katex';
+import { MathJax } from 'better-react-mathjax';
 
 interface MathDisplayProps {
   latex: string;
@@ -13,21 +13,11 @@ export default function MathDisplay({
   displayMode = false,
   className,
 }: MathDisplayProps) {
-  let html = '';
-  try {
-    html = katex.renderToString(latex, {
-      displayMode,
-      throwOnError: false,
-    });
-  } catch {
-    html = `<span class="text-red-500">[Math error: ${latex}]</span>`;
-  }
+  const mathContent = displayMode ? `$$${latex}$$` : `$${latex}$`;
 
   return (
-    <span
-      className={className}
-      // eslint-disable-next-line react/no-danger
-      dangerouslySetInnerHTML={{ __html: html }}
-    />
+    <span className={className}>
+      <MathJax inline={!displayMode}>{mathContent}</MathJax>
+    </span>
   );
 }
