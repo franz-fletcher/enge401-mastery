@@ -97,7 +97,7 @@ export default function ExerciseCard({
                     <Lightbulb className="h-4 w-4 text-yellow-600 mt-0.5 shrink-0" />
                     <div className="text-sm text-yellow-800">
                       <span className="font-medium">Hint {i + 1}:</span>{' '}
-                      <MathDisplay latex={hint.replace(/\$/g, '')} />
+                      <MathDisplay latex={hint} />
                     </div>
                   </div>
                 </CardContent>

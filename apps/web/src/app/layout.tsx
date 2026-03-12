@@ -1,12 +1,11 @@
 import type { Metadata } from 'next';
 import './globals.css';
-import MathJaxProvider from '@/components/MathJaxProvider';
+import 'katex/dist/katex.min.css';
 import { AuthProvider } from '@/components/auth-provider';
 import { ThemeProvider } from '@/components/theme-provider';
 import { SidebarProvider, SidebarInset, SidebarTrigger } from '@/components/ui/sidebar';
 import { Separator } from '@/components/ui/separator';
 import { SidebarLeft } from '@/components/sidebar-left';
-import { SidebarRight } from '@/components/sidebar-right';
 import { BreadcrumbNavigation } from '@/components/breadcrumb-navigation';
 import { ThemeToggle } from '@/components/theme-toggle';
 
@@ -30,23 +29,20 @@ export default function RootLayout({
             enableSystem
             disableTransitionOnChange
           >
-            <MathJaxProvider>
-              <SidebarProvider>
-                <SidebarLeft />
-                <SidebarInset>
-                  <header className="flex h-14 items-center gap-2 border-b bg-background px-4">
-                    <SidebarTrigger />
-                    <Separator orientation="vertical" className="mr-2 h-4" />
-                    <BreadcrumbNavigation />
-                    <div className="ml-auto">
-                      <ThemeToggle />
-                    </div>
-                  </header>
-                  <main className="flex-1 p-4">{children}</main>
-                </SidebarInset>
-                <SidebarRight />
-              </SidebarProvider>
-            </MathJaxProvider>
+            <SidebarProvider>
+              <SidebarLeft />
+              <SidebarInset>
+                <header className="flex h-14 items-center gap-2 border-b bg-background px-4">
+                  <SidebarTrigger />
+                  <Separator orientation="vertical" className="mr-2 h-4" />
+                  <BreadcrumbNavigation />
+                  <div className="ml-auto">
+                    <ThemeToggle />
+                  </div>
+                </header>
+                <main className="flex-1 p-4">{children}</main>
+              </SidebarInset>
+            </SidebarProvider>
           </ThemeProvider>
         </AuthProvider>
       </body>

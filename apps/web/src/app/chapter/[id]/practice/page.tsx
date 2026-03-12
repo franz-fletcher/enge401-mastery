@@ -213,7 +213,7 @@ export default function ChapterPracticePage({ params }: PageProps) {
             <CardContent className="p-6 space-y-6">
               <div className="text-foreground font-medium text-lg">
                 <MathDisplay 
-                  latex={exercise.question.replace(/\$/g, '')} 
+                  latex={exercise.question} 
                   displayMode={true} 
                 />
               </div>

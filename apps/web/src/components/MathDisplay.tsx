@@ -1,6 +1,7 @@
 'use client';
 
-import { MathJax } from 'better-react-mathjax';
+import katex from 'katex';
+import MixedContent, { isMixedContent } from './MixedContent';
 
 interface MathDisplayProps {
   latex: string;
@@ -8,16 +9,33 @@ interface MathDisplayProps {
   className?: string;
 }
 
+/**
+ * MathDisplay renders mathematical content.
+ *
+ * For pure math content (no $ delimiters), it wraps the content in math mode.
+ * For mixed content (contains $ delimiters), it uses MixedContent to properly
+ * render text and math segments while preserving spacing.
+ */
 export default function MathDisplay({
   latex,
   displayMode = false,
   className,
 }: MathDisplayProps) {
-  const mathContent = displayMode ? `$$${latex}$$` : `$${latex}$`;
+  // Check if this is mixed content (contains $ delimiters outside of math)
+  if (isMixedContent(latex)) {
+    return <MixedContent content={latex} className={className} />;
+  }
+
+  // Pure math content - render with KaTeX
+  const html = katex.renderToString(latex, {
+    throwOnError: false,
+    displayMode,
+  });
 
   return (
-    <span className={className}>
-      <MathJax inline={!displayMode}>{mathContent}</MathJax>
-    </span>
+    <span
+      className={className}
+      dangerouslySetInnerHTML={{ __html: html }}
+    />
   );
 }

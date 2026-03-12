@@ -120,7 +120,7 @@ export function ExerciseDisplay({
       <CardContent className="space-y-6">
         <div className="text-foreground font-medium text-lg">
           <MathDisplay 
-            latex={exercise.question.replace(/\$/g, '')} 
+            latex={exercise.question} 
             displayMode={true} 
           />
         </div>
