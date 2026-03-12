@@ -106,10 +106,7 @@ export default async function ChapterPage({ params }: PageProps) {
             <CollapsibleContent>
               <CardContent className="space-y-4">
                 {content ? (
-                  <ChapterContent 
-                    html={content.html} 
-                    className="prose prose-sm max-w-none dark:prose-invert prose-headings:font-semibold prose-h1:text-xl prose-h2:text-lg prose-h3:text-base prose-p:text-muted-foreground prose-strong:text-foreground prose-code:text-primary prose-pre:bg-muted prose-pre:text-muted-foreground prose-table:text-sm prose-th:text-foreground prose-td:text-muted-foreground"
-                  />
+                  <ChapterContent html={content.html} />
                 ) : (
                   <p className="text-sm text-muted-foreground">
                     Theory content for Chapter {chapter.id} will appear here. This section
