@@ -1,4 +1,4 @@
-// Middleware is disabled for now to avoid Edge Runtime issues with better-sqlite3
+// Middleware configuration
 // The auth() function from NextAuth v5 can be used directly in Server Components
 // and Server Actions for authentication.
 //

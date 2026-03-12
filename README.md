@@ -177,5 +177,5 @@ Next.js 15 App Router application with:
 | [Tailwind CSS](https://tailwindcss.com/) | Styling |
 | [Vitest](https://vitest.dev/) | Unit testing |
 | [Drizzle ORM](https://orm.drizzle.team/) | TypeScript ORM |
-| [SQLite](https://www.sqlite.org/) | Local database |
-| [better-sqlite3](https://github.com/WiseLibs/better-sqlite3) | SQLite driver |
+| [PostgreSQL](https://www.postgresql.org/) | Database |
+| [Neon](https://neon.tech/) | Serverless Postgres |
