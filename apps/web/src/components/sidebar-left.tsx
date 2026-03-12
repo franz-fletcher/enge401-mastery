@@ -15,6 +15,7 @@ import {
   Library,
   RotateCcw,
   GraduationCap,
+  Info,
 } from 'lucide-react';
 import { useSession } from 'next-auth/react';
 
@@ -65,6 +66,11 @@ const mainNavItems = [
     title: 'Dashboard',
     url: '/dashboard',
     icon: LayoutDashboard,
+  },
+  {
+    title: 'About',
+    url: '/about',
+    icon: Info,
   },
 ];
 

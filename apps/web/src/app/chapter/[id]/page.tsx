@@ -1,6 +1,8 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { chapters } from '@/lib/chapters';
+import { loadChapterContent } from '@/lib/content';
+import ChapterContent from '@/components/ChapterContent';
 import ExerciseCard from '@/components/ExerciseCard';
 import {
   Card,
@@ -27,7 +29,6 @@ import {
   ChevronDown,
   GraduationCap,
   Target,
-  ExternalLink,
 } from 'lucide-react';
 
 interface PageProps {
@@ -43,6 +44,7 @@ export default async function ChapterPage({ params }: PageProps) {
   const chapter = chapters.find((ch) => ch.id === Number(id));
   if (!chapter) notFound();
 
+  const content = await loadChapterContent(chapter.id);
   const prevChapter = chapters.find((ch) => ch.id === chapter.id - 1);
   const nextChapter = chapters.find((ch) => ch.id === chapter.id + 1);
 
@@ -103,26 +105,18 @@ export default async function ChapterPage({ params }: PageProps) {
             </CollapsibleTrigger>
             <CollapsibleContent>
               <CardContent className="space-y-4">
-                <p className="text-sm text-muted-foreground">
-                  Theory content for Chapter {chapter.id} will appear here. This section
-                  will cover the fundamental concepts, formulas, and techniques needed
-                  to master {chapter.title.toLowerCase()}.
-                </p>
-                <div className="rounded-lg bg-muted p-4">
+                {content ? (
+                  <ChapterContent 
+                    html={content.html} 
+                    className="prose prose-sm max-w-none dark:prose-invert prose-headings:font-semibold prose-h1:text-xl prose-h2:text-lg prose-h3:text-base prose-p:text-muted-foreground prose-strong:text-foreground prose-code:text-primary prose-pre:bg-muted prose-pre:text-muted-foreground prose-table:text-sm prose-th:text-foreground prose-td:text-muted-foreground"
+                  />
+                ) : (
                   <p className="text-sm text-muted-foreground">
-                    Refer to the{' '}
-                    <a
-                      href="https://github.com/millecodex/ENGE401"
-                      className="text-primary underline-offset-4 hover:underline inline-flex items-center gap-1"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      ENGE401 course manual
-                      <ExternalLink className="h-3 w-3" />
-                    </a>{' '}
-                    for detailed explanations and worked examples.
+                    Theory content for Chapter {chapter.id} will appear here. This section
+                    will cover the fundamental concepts, formulas, and techniques needed
+                    to master {chapter.title.toLowerCase()}.
                   </p>
-                </div>
+                )}
               </CardContent>
             </CollapsibleContent>
           </Card>
