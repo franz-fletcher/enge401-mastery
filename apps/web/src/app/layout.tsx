@@ -4,10 +4,15 @@ import 'katex/dist/katex.min.css';
 import { AuthProvider } from '@/components/auth-provider';
 import { ThemeProvider } from '@/components/theme-provider';
 import { SidebarProvider, SidebarInset, SidebarTrigger } from '@/components/ui/sidebar';
+import { TooltipProvider } from '@/components/ui/tooltip';
 import { Separator } from '@/components/ui/separator';
 import { SidebarLeft } from '@/components/sidebar-left';
 import { BreadcrumbNavigation } from '@/components/breadcrumb-navigation';
 import { ThemeToggle } from '@/components/theme-toggle';
+import { Inter } from "next/font/google";
+import { cn } from "@/lib/utils";
+
+const inter = Inter({subsets:['latin'],variable:'--font-sans'});
 
 export const metadata: Metadata = {
   title: 'ENGE401 Mastery',
@@ -20,7 +25,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning className={cn("font-sans", inter.variable)}>
       <body className="font-sans antialiased">
         <AuthProvider>
           <ThemeProvider
@@ -29,20 +34,22 @@ export default function RootLayout({
             enableSystem
             disableTransitionOnChange
           >
-            <SidebarProvider>
-              <SidebarLeft />
-              <SidebarInset>
-                <header className="flex h-14 items-center gap-2 border-b bg-background px-4">
-                  <SidebarTrigger />
-                  <Separator orientation="vertical" className="mr-2 h-4" />
-                  <BreadcrumbNavigation />
-                  <div className="ml-auto">
-                    <ThemeToggle />
-                  </div>
-                </header>
-                <main className="flex-1 p-4">{children}</main>
-              </SidebarInset>
-            </SidebarProvider>
+            <TooltipProvider>
+              <SidebarProvider>
+                <SidebarLeft />
+                <SidebarInset>
+                  <header className="flex h-14 items-center gap-2 border-b bg-background px-4">
+                    <SidebarTrigger />
+                    <Separator orientation="vertical" className="mr-2 h-4" />
+                    <BreadcrumbNavigation />
+                    <div className="ml-auto">
+                      <ThemeToggle />
+                    </div>
+                  </header>
+                  <main className="flex-1 p-4">{children}</main>
+                </SidebarInset>
+              </SidebarProvider>
+            </TooltipProvider>
           </ThemeProvider>
         </AuthProvider>
       </body>
