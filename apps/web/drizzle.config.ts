@@ -3,9 +3,9 @@ import type { Config } from 'drizzle-kit';
 export default {
   schema: './src/db/schema.ts',
   out: './drizzle/migrations',
-  dialect: 'sqlite',
+  dialect: 'postgresql',
   dbCredentials: {
-    url: process.env.DATABASE_URL || 'file:./data/dev.db',
+    url: process.env.DATABASE_URL_UNPOOLED || process.env.DATABASE_URL!,
   },
   // Enable strict mode for better type safety
   strict: true,

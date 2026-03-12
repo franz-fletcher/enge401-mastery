@@ -2,27 +2,25 @@ import { relations, sql } from 'drizzle-orm';
 import {
   integer,
   real,
-  sqliteTable,
+  pgTable,
   text,
+  timestamp,
+  boolean,
   index,
   uniqueIndex,
   primaryKey,
-} from 'drizzle-orm/sqlite-core';
+} from 'drizzle-orm/pg-core';
 
 // Users table (for anonymous auth via NextAuth)
-export const users = sqliteTable(
+export const users = pgTable(
   'users',
   {
     id: text('id')
       .primaryKey()
       .$defaultFn(() => crypto.randomUUID()),
     anonymousId: text('anonymous_id').notNull().unique(),
-    createdAt: integer('created_at', { mode: 'timestamp_ms' })
-      .notNull()
-      .$defaultFn(() => new Date()),
-    lastActiveAt: integer('last_active_at', { mode: 'timestamp_ms' })
-      .notNull()
-      .$defaultFn(() => new Date()),
+    createdAt: timestamp('created_at').notNull().defaultNow(),
+    lastActiveAt: timestamp('last_active_at').notNull().defaultNow(),
   },
   (table) => ({
     anonymousIdIdx: uniqueIndex('anonymous_id_idx').on(table.anonymousId),
@@ -30,7 +28,7 @@ export const users = sqliteTable(
 );
 
 // Progress tracking table
-export const progress = sqliteTable(
+export const progress = pgTable(
   'progress',
   {
     id: text('id')
@@ -41,15 +39,13 @@ export const progress = sqliteTable(
       .references(() => users.id, { onDelete: 'cascade' }),
     chapterId: integer('chapter_id').notNull(),
     exerciseType: text('exercise_type').notNull(),
-    completedAt: integer('completed_at', { mode: 'timestamp_ms' })
-      .notNull()
-      .$defaultFn(() => new Date()),
+    completedAt: timestamp('completed_at').notNull().defaultNow(),
     accuracy: real('accuracy').notNull(),
     attempts: integer('attempts').notNull().default(1),
     difficulty: text('difficulty', {
       enum: ['easy', 'medium', 'hard'],
     }),
-    isCorrect: integer('is_correct', { mode: 'boolean' }),
+    isCorrect: boolean('is_correct'),
     question: text('question'),
     answer: text('answer'),
     hints: text('hints'),
@@ -65,7 +61,7 @@ export const progress = sqliteTable(
 );
 
 // Spaced repetition (SM-2 algorithm) table
-export const spacedRepetition = sqliteTable(
+export const spacedRepetition = pgTable(
   'spaced_repetition',
   {
     id: text('id')
@@ -78,16 +74,12 @@ export const spacedRepetition = sqliteTable(
     difficulty: text('difficulty', {
       enum: ['easy', 'medium', 'hard'],
     }).notNull(),
-    nextReviewAt: integer('next_review_at', { mode: 'timestamp_ms' }).notNull(),
+    nextReviewAt: timestamp('next_review_at').notNull(),
     interval: integer('interval').notNull().default(0), // days
     easeFactor: real('ease_factor').notNull().default(2.5),
     repetitions: integer('repetitions').notNull().default(0),
-    createdAt: integer('created_at', { mode: 'timestamp_ms' })
-      .notNull()
-      .$defaultFn(() => new Date()),
-    updatedAt: integer('updated_at', { mode: 'timestamp_ms' })
-      .notNull()
-      .$defaultFn(() => new Date()),
+    createdAt: timestamp('created_at').notNull().defaultNow(),
+    updatedAt: timestamp('updated_at').notNull().defaultNow(),
   },
   (table) => ({
     userIdIdx: index('sr_user_id_idx').on(table.userId),
@@ -101,7 +93,7 @@ export const spacedRepetition = sqliteTable(
 );
 
 // Study sessions table
-export const studySessions = sqliteTable(
+export const studySessions = pgTable(
   'study_sessions',
   {
     id: text('id')
@@ -110,10 +102,8 @@ export const studySessions = sqliteTable(
     userId: text('user_id')
       .notNull()
       .references(() => users.id, { onDelete: 'cascade' }),
-    startedAt: integer('started_at', { mode: 'timestamp_ms' })
-      .notNull()
-      .$defaultFn(() => new Date()),
-    endedAt: integer('ended_at', { mode: 'timestamp_ms' }),
+    startedAt: timestamp('started_at').notNull().defaultNow(),
+    endedAt: timestamp('ended_at'),
     exercisesCompleted: integer('exercises_completed').notNull().default(0),
     accuracy: real('accuracy'),
   },
@@ -124,7 +114,7 @@ export const studySessions = sqliteTable(
 );
 
 // Calendar events table (for future study scheduling)
-export const calendarEvents = sqliteTable(
+export const calendarEvents = pgTable(
   'calendar_events',
   {
     id: text('id')
@@ -134,16 +124,12 @@ export const calendarEvents = sqliteTable(
       .notNull()
       .references(() => users.id, { onDelete: 'cascade' }),
     title: text('title').notNull(),
-    date: integer('date', { mode: 'timestamp_ms' }).notNull(),
+    date: timestamp('date').notNull(),
     type: text('type', {
       enum: ['study_goal', 'review_due', 'milestone'],
     }).notNull(),
-    completed: integer('completed', { mode: 'boolean' })
-      .notNull()
-      .default(false),
-    createdAt: integer('created_at', { mode: 'timestamp_ms' })
-      .notNull()
-      .$defaultFn(() => new Date()),
+    completed: boolean('completed').notNull().default(false),
+    createdAt: timestamp('created_at').notNull().defaultNow(),
   },
   (table) => ({
     userIdIdx: index('calendar_user_id_idx').on(table.userId),
@@ -189,7 +175,7 @@ export const calendarEventsRelations = relations(calendarEvents, ({ one }) => ({
 }));
 
 // NextAuth.js required tables
-export const accounts = sqliteTable(
+export const accounts = pgTable(
   'accounts',
   {
     userId: text('userId')
@@ -213,20 +199,20 @@ export const accounts = sqliteTable(
   })
 );
 
-export const sessions = sqliteTable('sessions', {
+export const sessions = pgTable('sessions', {
   sessionToken: text('sessionToken').primaryKey(),
   userId: text('userId')
     .notNull()
     .references(() => users.id, { onDelete: 'cascade' }),
-  expires: integer('expires', { mode: 'timestamp_ms' }).notNull(),
+  expires: timestamp('expires').notNull(),
 });
 
-export const verificationTokens = sqliteTable(
+export const verificationTokens = pgTable(
   'verificationTokens',
   {
     identifier: text('identifier').notNull(),
     token: text('token').notNull().unique(),
-    expires: integer('expires', { mode: 'timestamp_ms' }).notNull(),
+    expires: timestamp('expires').notNull(),
   },
   (vt) => ({
     compoundKey: primaryKey({ columns: [vt.identifier, vt.token] }),

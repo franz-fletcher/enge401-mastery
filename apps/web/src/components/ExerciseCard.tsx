@@ -92,10 +92,10 @@ export default function ExerciseCard({
           <div className="space-y-2">
             {hints.slice(0, hintsShown).map((hint, i) => (
               <Card key={i} className="bg-yellow-500/10 border-yellow-500/20">
-                <CardContent className="p-3">
-                  <div className="flex items-start gap-2">
-                    <Lightbulb className="h-4 w-4 text-yellow-600 mt-0.5 shrink-0" />
-                    <div className="text-sm text-yellow-800">
+                <CardContent className="p-4">
+                  <div className="flex items-start gap-3">
+                    <Lightbulb className="h-5 w-5 text-yellow-600 mt-1 shrink-0" />
+                    <div className="text-lg text-yellow-800 space-y-2">
                       <span className="font-medium">Hint {i + 1}:</span>{' '}
                       <MathDisplay latex={hint} />
                     </div>

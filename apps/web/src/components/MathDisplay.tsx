@@ -26,6 +26,14 @@ export default function MathDisplay({
     return <MixedContent content={latex} className={className} />;
   }
 
+  // Check if content has any math delimiters or LaTeX commands
+  // If not, render as plain text (not math)
+  const hasMathDelimiters = /\$\$.*?\$\$|\$[^\$]+\$/.test(latex);
+  const hasLatexCommands = /\\[a-zA-Z]+/.test(latex);
+  if (!hasMathDelimiters && !hasLatexCommands) {
+    return <span className={className}>{latex}</span>;
+  }
+
   // Pure math content - render with KaTeX
   const html = katex.renderToString(latex, {
     throwOnError: false,
