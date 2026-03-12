@@ -19,7 +19,7 @@
     "@enge401-mastery/math-engine": "workspace:*",
     "@enge401-mastery/spaced-repetition": "workspace:*",
     "@enge401-mastery/step-solver": "workspace:*",
-    "@neondatabase/serverless": "^1.0.2",
+    "@neondatabase/serverless": "^0.9.5",
     "@phosphor-icons/react": "^2.1.10",
     "@radix-ui/react-avatar": "^1.1.11",
     "@radix-ui/react-collapsible": "^1.1.12",

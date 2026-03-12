@@ -3,7 +3,7 @@
 import { auth } from '@/auth';
 import { db } from '@/db';
 import { progress, spacedRepetition, studySessions } from '@/db/schema';
-import { eq, and, gte, sql, desc } from 'drizzle-orm';
+import { eq, and, gte, lte, sql, desc } from 'drizzle-orm';
 import { chapters } from '@/lib/chapters';
 import { startOfDay, endOfDay } from 'date-fns';
 
@@ -45,7 +45,7 @@ export async function getUserStats(): Promise<UserStats> {
       and(
         eq(progress.userId, userId),
         gte(progress.completedAt, todayStart),
-        sql`${progress.completedAt} <= ${todayEnd.getTime()}`
+        lte(progress.completedAt, todayEnd)
       )
     );
 
@@ -63,7 +63,7 @@ export async function getUserStats(): Promise<UserStats> {
     .where(
       and(
         eq(spacedRepetition.userId, userId),
-        sql`${spacedRepetition.nextReviewAt} <= ${now.getTime()}`
+        lte(spacedRepetition.nextReviewAt, now)
       )
     );
 
@@ -82,12 +82,12 @@ async function calculateStreak(userId: string): Promise<number> {
   // Get all progress entries ordered by date
   const progressEntries = await db
     .select({
-      date: sql<Date>`date(${progress.completedAt})`,
+      date: sql<Date>`DATE(${progress.completedAt})`,
     })
     .from(progress)
     .where(eq(progress.userId, userId))
-    .orderBy(sql`date(${progress.completedAt}) DESC`)
-    .groupBy(sql`date(${progress.completedAt})`);
+    .orderBy(sql`DATE(${progress.completedAt}) DESC`)
+    .groupBy(sql`DATE(${progress.completedAt})`);
 
   if (progressEntries.length === 0) return 0;
 
@@ -137,7 +137,7 @@ export async function getStudyDays(month: Date): Promise<StudyDay[]> {
   // Get progress entries for the month
   const progressEntries = await db
     .select({
-      date: sql<Date>`date(${progress.completedAt})`,
+      date: sql<Date>`DATE(${progress.completedAt})`,
       count: sql<number>`count(*)`,
     })
     .from(progress)
@@ -145,15 +145,15 @@ export async function getStudyDays(month: Date): Promise<StudyDay[]> {
       and(
         eq(progress.userId, userId),
         gte(progress.completedAt, monthStart),
-        sql`${progress.completedAt} <= ${monthEnd.getTime()}`
+        lte(progress.completedAt, monthEnd)
       )
     )
-    .groupBy(sql`date(${progress.completedAt})`);
+    .groupBy(sql`DATE(${progress.completedAt})`);
 
   // Get review completions for the month (from spacedRepetition updatedAt)
   const reviewCompletions = await db
     .select({
-      date: sql<Date>`date(${spacedRepetition.updatedAt})`,
+      date: sql<Date>`DATE(${spacedRepetition.updatedAt})`,
       count: sql<number>`count(*)`,
     })
     .from(spacedRepetition)
@@ -162,10 +162,10 @@ export async function getStudyDays(month: Date): Promise<StudyDay[]> {
         eq(spacedRepetition.userId, userId),
         sql`${spacedRepetition.updatedAt} IS NOT NULL`,
         gte(spacedRepetition.updatedAt, monthStart),
-        sql`${spacedRepetition.updatedAt} <= ${monthEnd.getTime()}`
+        lte(spacedRepetition.updatedAt, monthEnd)
       )
     )
-    .groupBy(sql`date(${spacedRepetition.updatedAt})`);
+    .groupBy(sql`DATE(${spacedRepetition.updatedAt})`);
 
   // Merge the data
   const studyDaysMap = new Map<string, StudyDay>();
@@ -216,7 +216,7 @@ export async function getReviewDueDates(): Promise<Date[]> {
       and(
         eq(spacedRepetition.userId, userId),
         gte(spacedRepetition.nextReviewAt, today),
-        sql`${spacedRepetition.nextReviewAt} <= ${thirtyDaysFromNow.getTime()}`
+        lte(spacedRepetition.nextReviewAt, thirtyDaysFromNow)
       )
     );
 
